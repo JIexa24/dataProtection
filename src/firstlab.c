@@ -78,3 +78,8 @@ long int generate_prime_number() {
     return p;
 }
 
+//   g^x = h (mod n)
+long int small_big_steps(long int g, long int h, long int n) {
+  
+    return -1;
+}

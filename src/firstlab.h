@@ -6,5 +6,6 @@ void equlid(long int a, long int b, long int* x, long int *y, long int* nod);
 void key_diffyhellman();
 int test_prime_num(long int p);
 int generate_prime_number();
+long int small_big_steps(long int g, long int h, long int n) ;
 
 #endif

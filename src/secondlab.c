@@ -56,15 +56,11 @@ void vernam_decode(char* in, char* out, char* key) {
 
 int test_prime_too_num(long int p, long int e) {
   int i = 1;
+  unsigned long int x, y, nod;
   if (p == e) return 0;
   if (p % e == 0) return 0;
-  for (i = 1; i < p; ++i) {
-    if (p % i == 0) return 0;
-  }
-  
-  for (i = 1; i < e; ++i) {
-    if (e % i == 0) return 0;
-  }
+  equlid(p, e, &x, &y, &nod);
+  if (nod != 1) return 0;
   return 1;
 }
 
@@ -72,7 +68,7 @@ long int generate_prime_too_number(long int e) {
     long int p = 1;
     do {
         p = (random() + 1) % (500);
-    } while (!test_prime_too_num(p, e));
+    } while (!test_prime_too_num(e, p));
     return p;
 }
 
