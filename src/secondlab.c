@@ -1,5 +1,5 @@
-#include "secondlab.h"
-#include "firstlab.h"
+#include "../include/secondlab.h"
+#include "../include/firstlab.h"
 
 long int vernam_encode(char* in, char* out, char* key) {
   srand(time(NULL));

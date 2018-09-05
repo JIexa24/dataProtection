@@ -1,4 +1,4 @@
-#include "firstlab.h"
+#include "../include/firstlab.h"
 
 // num^pow % mod = result
 long int fast_pow(long int num, unsigned long int pow,unsigned long int mod) {

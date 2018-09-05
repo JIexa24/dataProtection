@@ -1,5 +1,5 @@
-#include "firstlab.h"
-
+#include "../include/firstlab.h"
+#include "../include/secondlab.h"
 int main (int argc, char** argv) {
   long int x, y, nod; 
   long int Ka, Kb;

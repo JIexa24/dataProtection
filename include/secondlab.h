@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 long int vernam_encode(char* in, char* out, char* key);
 long int vernam_decode(char* in, char* out, char* key);
