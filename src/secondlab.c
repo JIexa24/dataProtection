@@ -91,7 +91,7 @@ void rsa_generate() {
   eiler_res = (p - 1) * (q - 1);
   e = generate_prime_too_number(eiler_res);
 
-  d = fast_pow(e, -1, eiler_res);
+  d = fast_pow(e, (unsigned long int)-1, eiler_res);
   fdpub = open("~/.keyrsa.pub",  O_WRONLY | O_CREAT | O_TRUNC, 0666);
   if (fdpub == -1) {
     printf("Can't open file .keyrsa.pub\n");

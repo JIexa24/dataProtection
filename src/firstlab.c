@@ -2,7 +2,7 @@
 #include <time.h>
 
 // num^pow % mod = result
-long int fast_pow(long int num, long int pow, long int mod) {
+long int fast_pow(long int num, unsigned long int pow,unsigned long int mod) {
     long int result = 1;
     while (pow)
     {
