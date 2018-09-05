@@ -1,5 +1,4 @@
-#include <stdio.h>
-#include <time.h>
+#include "firstlab.h"
 
 // num^pow % mod = result
 long int fast_pow(long int num, unsigned long int pow,unsigned long int mod) {
@@ -58,7 +57,7 @@ void key_diffyhellman(long int* K1, long int* K2) {
   Kb = fast_pow(Akey, b, p);
   //Ba mod p = (gb mod p)a mod p = gab mod p = (ga mod p)b mod p = Ab mod p
   *K1 = Ka;
-  *K2 = Kb
+  *K2 = Kb;
 }
 
 int test_prime_num(long int p) {
@@ -73,13 +72,27 @@ int test_prime_num(long int p) {
 long int generate_prime_number() {
     long int p = 1;
     do {
-        p = (random() + 1) % (500);
+        p = (rand() + 1) % (500);
     } while (!test_prime_num(p));
     return p;
 }
 
-//   g^x = h (mod n)
-long int small_big_steps(long int g, long int h, long int n) {
-  
+//g^x (mod p) = a 
+//ru.wikipedia.org/wiki/Алгоритм_Гельфонда_-_Шенкса
+long int small_big_steps(long int g, long int a, long int p) {
+    long int res, i = 0, j = 0;
+    long int m = (long int)sqrt((double)p) + 1;
+    long int k = m;
+    if (k * m <= p) {
+      printf("k * m <= p\n");
+      return -1;
+    }
+    for (i = 0; i < m; ++i) {
+      for (j = 0; j <= k; ++j) {
+        if (a * fast_pow(g, i, p) == fast_pow(g, j * m, p)) {
+          return j * m - i;
+        }
+      }
+    }
     return -1;
 }

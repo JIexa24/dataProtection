@@ -1,3 +1,5 @@
+#include "secondlab.h"
+#include "firstlab.h"
 
 long int vernam_encode(char* in, char* out, char* key) {
   srand(time(NULL));
@@ -6,20 +8,20 @@ long int vernam_encode(char* in, char* out, char* key) {
   int fdkey = open(key, O_WRONLY | O_CREAT | O_TRUNC, 0666);
   if (fdin == -1) {
     printf("Can't open file %s\n", in);
-    return;
+    return -1;
   }
   if (fdout == -1) {
     printf("Can't open file %s\n", out);
-    return;
+    return -1;
   }
   if (fdkey == -1) {
     printf("Can't open file %s\n", key);
-    return;
+    return -1;
   }
   char c = '\0';
-  char keych = '\0'
+  char keych = '\0';
   long int k = 0;
-  while (read(fin, &c, 1) != 0) {
+  while (read(fdin, &c, 1) != 0) {
     if (read(fdkey, &keych, 1) == 0) {
       printf("\nlength files is not equal\n");
       return k;
@@ -34,14 +36,26 @@ long int vernam_encode(char* in, char* out, char* key) {
   return k;
 }
 
-void vernam_decode(char* in, char* out, char* key) {
+long int vernam_decode(char* in, char* out, char* key) {
   long int fdin =  open(in, O_RDONLY);
   int fdout = open(out, O_WRONLY | O_CREAT | O_TRUNC, 0666);
   int fdkey = open(key, O_RDONLY);
+  if (fdin == -1) {
+    printf("Can't open file %s\n", in);
+    return -1;
+  }
+  if (fdout == -1) {
+    printf("Can't open file %s\n", out);
+    return -1;
+  }
+  if (fdkey == -1) {
+    printf("Can't open file %s\n", key);
+    return -1;
+  }
   char c = '\0';
-  char keych = '\0'
+  char keych = '\0';
   long int k = 0;
-  while (read(fin, &c, 1) != 0) {
+  while (read(fdin, &c, 1) != 0) {
     keych = (rand() % 256);//ascii table
     c = c ^ keych;
     write(fdout, &c, 1);
@@ -67,7 +81,7 @@ int test_prime_too_num(long int p, long int e) {
 long int generate_prime_too_number(long int e) {
     long int p = 1;
     do {
-        p = (random() + 1) % (500);
+        p = (rand() + 1) % (500);
     } while (!test_prime_too_num(e, p));
     return p;
 }

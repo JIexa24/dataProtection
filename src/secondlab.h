@@ -1,5 +1,11 @@
-#ifndef SL_H
-#define SL_H
+#ifndef SECL_H
+#define SECL_H
+
+#include <time.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <fcntl.h>
 
 long int vernam_encode(char* in, char* out, char* key);
 long int vernam_decode(char* in, char* out, char* key);
