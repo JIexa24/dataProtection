@@ -1,11 +1,11 @@
 #include "../include/secondlab.h"
 #include "../include/firstlab.h"
 
-long int vernam_encode(char* in, char* out, char* key) {
+long int vernam_decode(char* in, char* out, char* key) {
   srand(time(NULL));
   int fdin =  open(in, O_RDONLY);
   int fdout = open(out, O_WRONLY | O_CREAT | O_TRUNC, 0666);
-  int fdkey = open(key, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+  int fdkey = open(key, O_RDONLY);
   if (fdin == -1) {
     printf("Can't open file %s\n", in);
     return -1;
@@ -36,10 +36,10 @@ long int vernam_encode(char* in, char* out, char* key) {
   return k;
 }
 
-long int vernam_decode(char* in, char* out, char* key) {
+long int vernam_encode(char* in, char* out, char* key) {
   long int fdin =  open(in, O_RDONLY);
   int fdout = open(out, O_WRONLY | O_CREAT | O_TRUNC, 0666);
-  int fdkey = open(key, O_RDONLY);
+  int fdkey = open(key, O_WRONLY | O_CREAT | O_TRUNC, 0666);
   if (fdin == -1) {
     printf("Can't open file %s\n", in);
     return -1;
