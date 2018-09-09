@@ -1,5 +1,4 @@
-#include "../include/secondlab.h"
-#include "../include/firstlab.h"
+#include "../include/main.h"
 
 long int vernam_decode(char* in, char* out, char* key) {
   srand(time(NULL));
@@ -95,7 +94,7 @@ void rsa_generate() {
     p = generate_prime_number();
     q = generate_prime_number();
   } while (p != q);
-  
+
   n = p * q;
 
   eiler_res = (p - 1) * (q - 1);
@@ -124,10 +123,10 @@ void rsa_generate() {
 
 void rsa_encode(char* in, char* out) {
   int fdin, fdout, fdkey;
-  
+
 }
 
 void rsa_decode(char* in, char* out) {
   int fdin, fdout, fdkey;
-  
+
 }

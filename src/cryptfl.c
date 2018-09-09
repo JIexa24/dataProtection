@@ -1,4 +1,4 @@
-#include "../include/firstlab.h"
+#include "../include/main.h"
 
 // num^pow % mod = result
 long int fast_pow(long int num, unsigned long int pow,unsigned long int mod) {
@@ -28,17 +28,17 @@ void equlid(long int a, long int b, long int* x, long int *y, long int* nod) {
     Ux = Vx;
     Uy = Vy;
     Uz = Vz;
-    
+
     Vx = Tempx;
     Vy = Tempy;
     Vz = Tempz;
   }
-  
+
   *x = Uy;
   *y = Uz;
   *nod = Ux;
 }
-//ru.wikipedia.org/wiki/Протокол_Диффи_-_Хеллмана
+//ru.wikipedia.org/wiki/пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ_пїЅпїЅпїЅпїЅпїЅ_-_пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void key_diffyhellman(long int* K1, long int* K2) {
   srand(time(NULL));
   //A know g p
@@ -47,12 +47,12 @@ void key_diffyhellman(long int* K1, long int* K2) {
   long int a, b;
   long int Ka, Kb;
   //A gen a & key
-  a = rand();  
+  a = rand();
   Akey = fast_pow(g, a, p);
   //B gen b &key
-  b = rand();  
+  b = rand();
   Bkey = fast_pow(g, b, p);
-  
+
   Ka = fast_pow(Bkey, a, p);
   Kb = fast_pow(Akey, b, p);
   //Ba mod p = (gb mod p)a mod p = gab mod p = (ga mod p)b mod p = Ab mod p
@@ -62,7 +62,7 @@ void key_diffyhellman(long int* K1, long int* K2) {
 
 int test_prime_num(long int p) {
   int i = 1;
-  
+
   for (i = 1; i < p; ++i) {
     if (p % i == 0) return 0;
   }
@@ -77,8 +77,8 @@ long int generate_prime_number() {
     return p;
 }
 
-//g^x (mod p) = a 
-//ru.wikipedia.org/wiki/Алгоритм_Гельфонда_-_Шенкса
+//g^x (mod p) = a
+//ru.wikipedia.org/wiki/пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ_пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ_-_пїЅпїЅпїЅпїЅпїЅпїЅ
 long int small_big_steps(long int g, long int a, long int p) {
     long int res, i = 0, j = 0;
     long int m = (long int)sqrt((double)p) + 1;

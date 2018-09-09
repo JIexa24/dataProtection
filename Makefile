@@ -8,20 +8,20 @@ all:MAIN
 MAIN: FLAB SLAB ./obj/main.o
 	$(CC) ./obj/main.o -o ./bin/main  $(LIB) $(LIBSRC)
 
-FLAB: ./obj/firstlab.o
-	ar rvs ./lib/libcryptfl.a ./obj/firstlab.o 
+FLAB: ./obj/cryptfl.o
+	ar rvs ./lib/libcryptfl.a ./obj/cryptfl.o
 
-SLAB: ./obj/secondlab.o
-	ar rvs ./lib/libchiphersl.a ./obj/secondlab.o
+SLAB: ./obj/chiphersl.o
+	ar rvs ./lib/libchiphersl.a ./obj/chiphersl.o
 
 ./obj/main.o: ./src/main.c
 	$(CC) -c ./src/main.c -o ./obj/main.o
 
-./obj/firstlab.o: ./src/firstlab.c
-	$(CC) -c ./src/firstlab.c -o ./obj/firstlab.o 
+./obj/cryptfl.o: ./src/cryptfl.c
+	$(CC) -c ./src/cryptfl.c -o ./obj/cryptfl.o
 
-./obj/secondlab.o: ./src/secondlab.c
-	$(CC) -c ./src/secondlab.c -o ./obj/secondlab.o
+./obj/chiphersl.o: ./src/chiphersl.c
+	$(CC) -c ./src/chiphersl.c -o ./obj/chiphersl.o
 
 clean:
 	rm -rf ./obj/*
