@@ -4,4 +4,6 @@
 #include "./cryptfl.h"
 #include "./chiphersl.h"
 
+#define MAXINT 500
+
 #endif

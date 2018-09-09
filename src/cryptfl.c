@@ -1,7 +1,7 @@
 #include "../include/main.h"
 
 // num^pow % mod = result
-long int fast_pow(long int num, unsigned long int pow,unsigned long int mod) {
+long int mod_pow(long int num, unsigned long int pow,unsigned long int mod) {
     long int result = 1;
     while (pow)
     {
@@ -34,9 +34,9 @@ void equlid(long int a, long int b, long int* x, long int *y, long int* nod) {
     Vz = Tempz;
   }
 
-  *x = Uy;
-  *y = Uz;
-  *nod = Ux;
+  if (x != NULL) *x = Uy;
+  if (y != NULL) *y = Uz;
+  if (nod != NULL) *nod = Ux;
 }
 //ru.wikipedia.org/wiki/��������_�����_-_��������
 void key_diffyhellman(long int* K1, long int* K2) {
@@ -48,13 +48,13 @@ void key_diffyhellman(long int* K1, long int* K2) {
   long int Ka, Kb;
   //A gen a & key
   a = rand();
-  Akey = fast_pow(g, a, p);
+  Akey = mod_pow(g, a, p);
   //B gen b &key
   b = rand();
-  Bkey = fast_pow(g, b, p);
+  Bkey = mod_pow(g, b, p);
 
-  Ka = fast_pow(Bkey, a, p);
-  Kb = fast_pow(Akey, b, p);
+  Ka = mod_pow(Bkey, a, p);
+  Kb = mod_pow(Akey, b, p);
   //Ba mod p = (gb mod p)a mod p = gab mod p = (ga mod p)b mod p = Ab mod p
   *K1 = Ka;
   *K2 = Kb;
@@ -63,16 +63,16 @@ void key_diffyhellman(long int* K1, long int* K2) {
 int test_prime_num(long int p) {
   int i = 1;
 
-  for (i = 1; i < p; ++i) {
+  for (i = 2; i < p; ++i) {
     if (p % i == 0) return 0;
   }
   return 1;
 }
 
-long int generate_prime_number() {
+long int generate_prime_number(long int min, long int max) {
     long int p = 1;
     do {
-        p = (rand() + 1) % (500);
+        p = (rand()) % (max - min ) + min;
     } while (!test_prime_num(p));
     return p;
 }
@@ -89,7 +89,7 @@ long int small_big_steps(long int g, long int a, long int p) {
     }
     for (i = 0; i < m; ++i) {
       for (j = 0; j <= k; ++j) {
-        if (a * fast_pow(g, i, p) == fast_pow(g, j * m, p)) {
+        if (a * mod_pow(g, i, p) == mod_pow(g, j * m, p)) {
           return j * m - i;
         }
       }

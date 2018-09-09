@@ -18,10 +18,10 @@ SLAB: ./obj/chiphersl.o
 	$(CC) -c ./src/main.c -o ./obj/main.o
 
 ./obj/cryptfl.o: ./src/cryptfl.c
-	$(CC) -c ./src/cryptfl.c -o ./obj/cryptfl.o
+	$(CC) -c ./src/cryptfl.c -o ./obj/cryptfl.o $(CFLAGS)
 
 ./obj/chiphersl.o: ./src/chiphersl.c
-	$(CC) -c ./src/chiphersl.c -o ./obj/chiphersl.o
+	$(CC) -c ./src/chiphersl.c -o ./obj/chiphersl.o $(CFLAGS)
 
 clean:
 	rm -rf ./obj/*
