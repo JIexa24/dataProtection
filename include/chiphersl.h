@@ -17,6 +17,6 @@ long int rsa_encode(char* in, char* out);
 long int rsa_decode(char* in, char* out);
 void closefiles(int N, ...);
 int el_gamal_generate();
-static int fsqrt_mod (long int p);
+static int fsqrt_mod(long int p);
 
 #endif
