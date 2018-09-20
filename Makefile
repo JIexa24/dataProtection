@@ -2,11 +2,15 @@ CC=gcc
 CFLAGS=-O0 -g3
 LIB=-lcryptfl -lchiphersl -lm
 LIBSRC=-L./lib/
+BIN=./bin/main
 
 all:MAIN
 
+run: MAIN
+	$(BIN)
+
 MAIN: FLAB SLAB ./obj/main.o
-	$(CC) ./obj/main.o -o ./bin/main  $(LIB) $(LIBSRC)
+	$(CC) ./obj/main.o -o $(BIN)  $(LIB) $(LIBSRC)
 
 FLAB: ./obj/cryptfl.o
 	ar rvs ./lib/libcryptfl.a ./obj/cryptfl.o

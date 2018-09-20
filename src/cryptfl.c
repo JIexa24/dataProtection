@@ -42,15 +42,17 @@ void equlid(long int a, long int b, long int* x, long int *y, long int* nod) {
 void key_diffyhellman(long int* K1, long int* K2) {
   srand(time(NULL));
   //A know g p
-  long int g = rand(), p = rand();
+  long int g = generate_prime_number(1, 1000);//4200;
+  long int p;
+  p = generate_prime_number(1, 1000);//3571;
   long int Akey = 0, Bkey = 0;
   long int a, b;
   long int Ka, Kb;
   //A gen a & key
-  a = rand();
+  a = rand() % (1000000000 - 10000) + 10000;//187653288;
   Akey = mod_pow(g, a, p);
   //B gen b &key
-  b = rand();
+  b = rand() % (1000000000 - 10000) + 10000;// 987701673;
   Bkey = mod_pow(g, b, p);
 
   Ka = mod_pow(Bkey, a, p);
@@ -63,8 +65,30 @@ void key_diffyhellman(long int* K1, long int* K2) {
 int test_prime_num(long int p) {
   int i = 1;
 
-  for (i = 2; i < p; ++i) {
+  for (i = 2; i < sqrt(p); ++i) {
     if (p % i == 0) return 0;
+  }
+  return 1;
+}
+
+long int gcd (long int a, long int b) {
+  if (b == 0)
+    return a;
+  return gcd(b, a % b);
+}
+
+int test_prime_f(long int p) {
+  int i = 1;
+  long int a = 1;
+  if (p == 2)
+    return 1;
+  srand(time(NULL));
+  for (i = 0; i < 100; ++i) {
+    a = (rand() % (p - 2)) + 2;
+    if (gcd(a, p) != 1) {
+      return 0;
+    }
+    if (mod_pow(a, p - 1, p) != 1) return 0;
   }
   return 1;
 }
@@ -77,22 +101,64 @@ long int generate_prime_number(long int min, long int max) {
     return p;
 }
 
+struct pair {
+  long int val;
+  long int index;
+} *littles;
+
+int cmp(const void * x1, const void * x2)   // функция сравнения элементов массива
+{
+  struct pair x11 = *(struct pair*)x1;
+  struct pair x21 = *(struct pair*)x2;
+  return (  x11.val - x21.val );              // если результат вычитания равен 0, то числа равны, < 0: x1 < x2; > 0: x1 > x2
+}
+
+long int binary_search(struct pair *a, long int n, long int val) {
+  long int index_cursor = n/2;
+  long int iteration = 0;
+  while (1) {
+    if (a[index_cursor].val > val) {
+      index_cursor = (index_cursor + n)/ 4 ;
+    } else index_cursor = (index_cursor + n) / 2;
+    if (a[index_cursor].val == val) return a[index_cursor].index;
+    if(++iteration >= n/2) break;
+  }
+  return -1;
+}
+
 //g^x (mod p) = a
-//ru.wikipedia.org/wiki/��������_���������_-_������
 long int small_big_steps(long int g, long int a, long int p) {
     long int res, i = 0, j = 0;
-    long int m = (long int)sqrt((double)p) + 1;
+    long int m = floor((long int)sqrt((double)p)) + 1;
     long int k = m;
+    struct pair *littles;
+
     if (k * m <= p) {
       printf("k * m <= p\n");
       return -1;
     }
-    for (i = 0; i < m; ++i) {
-      for (j = 0; j <= k; ++j) {
-        if (a * mod_pow(g, i, p) == mod_pow(g, j * m, p)) {
-          return j * m - i;
-        }
+
+    littles = (struct pair*)malloc(sizeof(struct pair) * (m + 1));
+    long int bigs;
+    littles[0].val = INT32_MAX;
+    littles[0].index = i;
+    for (i = 1; i < m; ++i) {
+      littles[i].index = i;
+      littles[i].val = (a * (long int)pow(g, i )) % p;
+      if (littles[i].val == 1) littles[i].val = INT32_MAX;
+    }
+
+    qsort(littles, m + 1, sizeof(struct pair), cmp);
+
+    for(int j = 1; j < m; j++){
+      bigs = mod_pow(g, j*m, p);
+      if((i = binary_search(littles, m, bigs)) != -1){
+        return i * m - j;
       }
     }
+
     return -1;
 }
+/*
+
+*/

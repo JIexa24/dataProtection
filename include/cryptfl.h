@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#define INT32_MAX 2147483647 
 
 long int mod_pow(long int num, unsigned long int pow,unsigned long int mod);
 void equlid(long int a, long int b, long int* x, long int *y, long int* nod);
