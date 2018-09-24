@@ -63,7 +63,7 @@ void key_diffyhellman(long int* K1, long int* K2) {
 }
 
 int test_prime_num(long int p) {
-  int i = 1;
+  long int i = 1;
 
   for (i = 2; i < sqrt(p); ++i) {
     if (p % i == 0) return 0;
@@ -78,7 +78,7 @@ long int gcd (long int a, long int b) {
 }
 
 int test_prime_f(long int p) {
-  int i = 1;
+  long int i = 1;
   long int a = 1;
   if (p == 2)
     return 1;
