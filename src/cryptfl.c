@@ -74,6 +74,7 @@ void key_diffyhellman(long int* K1, long int* K2) {
   //Ba mod p = (gb mod p)a mod p = gab mod p = (ga mod p)b mod p = Ab mod p
   *K1 = Ka;
   *K2 = Kb;
+//  printf ("%ld %ld %ld  df\n", p, g,q);
 }
 
 int test_prime_num(long int p) {

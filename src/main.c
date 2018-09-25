@@ -7,7 +7,7 @@ int main (int argc, char** argv) {
   equlid(373 , 33, &x, &y,&nod);
   key_diffyhellman(&Ka, &Kb);
 
-  printf("pow %ld\n", mod_pow(5387534,87,3571));
+  printf("pow %ld %d\n", mod_pow(809,593,1187), sizeof(long int));
   printf("x %ld, y %ld, nod %ld\n", x, y, nod);
   if (Ka == Kb) {
     printf("Ka %ld = %ld Kb\n", Ka, Kb);
