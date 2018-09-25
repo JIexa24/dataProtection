@@ -42,9 +42,23 @@ void equlid(long int a, long int b, long int* x, long int *y, long int* nod) {
 void key_diffyhellman(long int* K1, long int* K2) {
   srand(time(NULL));
   //A know g p
-  long int g = generate_prime_number(1, 1000);//4200;
+  long int g;// = generate_prime_number(1, 1000);//4200;
+  long int q;
   long int p;
-  p = generate_prime_number(1, 1000);//3571;
+  int tmp = 0;
+  long int tmp2 = 1;
+  while (1) {
+    q = generate_prime_number(1, 1000);//3571;
+    p = 2 * q + 1;
+    tmp = test_prime_num(p);
+    if (tmp) {
+      while (tmp2 == 1) {
+        g = generate_prime_number(1,p - 1);
+        tmp2 = mod_pow(g, q, p);
+      }
+      break;
+    }
+  }
   long int Akey = 0, Bkey = 0;
   long int a, b;
   long int Ka, Kb;
