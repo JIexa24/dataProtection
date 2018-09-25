@@ -96,7 +96,8 @@ int rsa_generate() {
     closefiles(1, fdpub);
     return -1;
   }
-
+  long int nod = 0;
+  while (nod != 1) {
   do {
     p = generate_prime_number(1, MAXINT);
     q = generate_prime_number(1, MAXINT);
@@ -104,11 +105,13 @@ int rsa_generate() {
   n = p * q;
   eiler_res = (p - 1) * (q - 1);
   e = generate_prime_too_number(eiler_res, 1, eiler_res);
-  while (d <= 0xFFFFFFFF) {
+/*  while (d <= 0xFFFFFFFF) {
     if ((d * e) % eiler_res == 1) break;
     ++d;
   }
-
+*/
+  equlid(e,eiler_res, &d, NULL, &nod);
+  }
   printf("rsa e = %ld, d = %ld %X,p = %ld, q = %ld, n = %ld\n", e, d,d, p, q, n);
   write(fdpub, &e, sizeof(e));
   write(fdpub, &n, sizeof(n));
