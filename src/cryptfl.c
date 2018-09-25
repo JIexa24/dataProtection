@@ -150,7 +150,7 @@ long int small_big_steps(long int g, long int a, long int p) {
 
     qsort(littles, m + 1, sizeof(struct pair), cmp);
 
-    for(int j = 1; j < m; j++){
+    for(j = 1; j < m; j++){
       bigs = mod_pow(g, j*m, p);
       if((i = binary_search(littles, m, bigs)) != -1){
         return i * m - j;
