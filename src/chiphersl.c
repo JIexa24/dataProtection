@@ -109,7 +109,7 @@ int rsa_generate() {
     ++d;
   }
 
-  printf("rsa e = %ld, d = %ld,p = %ld, q = %ld, n = %ld\n", e, d, p, q, n);
+  printf("rsa e = %ld, d = %ld %X,p = %ld, q = %ld, n = %ld\n", e, d,d, p, q, n);
   write(fdpub, &e, sizeof(e));
   write(fdpub, &n, sizeof(n));
   write(fdpriv, &d, sizeof(d));
