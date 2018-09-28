@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS=-O0 -g3
-LIB=-lcryptfl -lchiphersl -lm
+LIB=-lchiphersl -lcryptfl -lm
 LIBSRC=-L./lib/
 BIN=./bin/main
 
