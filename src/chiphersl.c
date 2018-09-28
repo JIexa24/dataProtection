@@ -82,9 +82,9 @@ long int generate_prime_too_number(long int e, long int min, long int max) {
 }
 
 int rsa_generate() {
-  long int p, q, e;
+  unsigned long int p, q, e;
   long int eiler_res;
-  long int d, n;
+  unsigned long int d, n;
   int fdpub, fdpriv;
 
   if ((fdpub = open("./.keyrsa.pub",  O_WRONLY | O_CREAT | O_TRUNC, 0666)) == -1) {
@@ -98,21 +98,21 @@ int rsa_generate() {
   }
   long int nod = 0;
   while (nod != 1) {
-  do {
-    p = generate_prime_number(1, MAXINT);
-    q = generate_prime_number(1, MAXINT);
-  } while (p == q);
-  n = p * q;
-  eiler_res = (p - 1) * (q - 1);
-  e = generate_prime_too_number(eiler_res, 1, eiler_res);
+    do {
+      p = generate_prime_number(1, MAXINT);
+      q = generate_prime_number(1, MAXINT);
+    } while (p == q);
+    n = p * q;
+    eiler_res = (p - 1) * (q - 1);
+    e = generate_prime_too_number(eiler_res, 1, eiler_res);
 /*  while (d <= 0xFFFFFFFF) {
-    if ((d * e) % eiler_res == 1) break;
-    ++d;
-  }
+      if ((d * e) % eiler_res == 1) break;
+      ++d;
+    }
 */
-  equlid(e,eiler_res, &d, NULL, &nod);
+    equlid(e, eiler_res, &d, NULL, &nod);
   }
-  printf("rsa e = %ld, d = %ld %X,p = %ld, q = %ld, n = %ld\n", e, d,d, p, q, n);
+  printf("rsa e = %lu, d = %lu %X,p = %lu, q = %lu, n = %lu\n", e, d,d, p, q, n);
   write(fdpub, &e, sizeof(e));
   write(fdpub, &n, sizeof(n));
   write(fdpriv, &d, sizeof(d));
@@ -125,7 +125,7 @@ int rsa_generate() {
 
 long int rsa_encode(char* in, char* out) {
   int fdin, fdout, fdkey;
-  long int pubkey_e, pubkey_n;
+  unsigned long int pubkey_e, pubkey_n;
   long int k = 0;
   long int c = '\0';
   if ((fdin =  open(in, O_RDONLY)) == -1) {
@@ -169,7 +169,7 @@ long int rsa_encode(char* in, char* out) {
 
 long int rsa_decode(char* in, char* out) {
   int fdin, fdout, fdkey;
-  long int privkey_d, privkey_n;
+  unsigned long int privkey_d, privkey_n;
   long int k = 0;
   long int  c = '\0';
   if ((fdin =  open(in, O_RDONLY)) == -1) {
@@ -245,15 +245,15 @@ int el_gamal_generate() {
 
 }
 
-static int fsqrt_mod (long int p) {
+int fsqrt_mod (long int p) {
   long int feiler = p - 1;
   unsigned long int var;
   long int i = 0, j = 0;
   char ok = 0;
   for (i = 1; i < feiler; ++i) {
     ok = 1;
-    for (j = 0; j < feiler; ++j) {
-      if (var = mod_pow(i, j, p) == 1) ok = 0;
+    for (j = 1; j < feiler; ++j) {
+      if ((var = mod_pow(i, j, p)) == 1) ok = 0;
     }
     if (ok == 1) break;
   }
