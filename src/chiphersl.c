@@ -97,7 +97,7 @@ int rsa_generate() {
     return -1;
   }
   long int nod = 0;
-  while (nod != 1) {
+  while (nod != 1 || test_prime_num(d) == 0 || d > 0xFFFF) {
     do {
       p = generate_prime_number(1, MAXINT);
       q = generate_prime_number(1, MAXINT);
