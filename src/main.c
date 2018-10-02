@@ -1,12 +1,23 @@
 #include "../include/main.h"
 #include <stdint.h>
 int main (int argc, char** argv) {
-  long int x = 311;
+  long int x, y, nod;
+  long int Ka, Kb;
 
-  printf("fsqrt %ld = %ld\n",x, fsqrt_mod(x));
+  equlid(373 , 33, &x, &y,&nod);
+  key_diffyhellman(&Ka, &Kb);
+
+  printf("pow %ld %d\n", mod_pow(809,593,1187), sizeof(long int));
+  printf("x %ld, y %ld, nod %ld\n", x, y, nod);
+  if (Ka == Kb) {
+    printf("Ka %ld = %ld Kb\n", Ka, Kb);
+  }
   printf("\n");
-  printf("vernam_encode return %ld\n", vernam_encode("./vernam.txt", "./vernam_code.txt", "./vernam_key.txt"));
-  printf("vernam_decode return %ld\n", vernam_decode("./vernam_code.txt", "./vernam_res.txt", "./vernam_key.txt"));
+  printf("sbs 3,13,17 (4)= %ld\n", small_big_steps(3, 13, 17));
+  printf("sbs 5,3,23 (16)= %ld\n", small_big_steps(5, 3, 23));
+  printf("\n");
+  printf("vernam_encode return %ld\n", vernam_encode("./vernam.txt"));
+  printf("vernam_decode return %ld\n", vernam_decode("./vernam.txt.encode"));
 
   printf("\n");
   rsa_generate();

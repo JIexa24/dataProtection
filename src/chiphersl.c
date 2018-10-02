@@ -1,10 +1,21 @@
 #include "../include/main.h"
 
-long int vernam_decode(char* in, char* out, char* key) {
-  int fdin, fdout, fdkey;
+long int vernam(char* in, char* out) {
+
+}
+
+long int vernam_decode(char* in) {
+  int fdin, fdout;
   char c = '\0';
   char keych = '\0';
+  char out[256] = {0};
+  strcat(out, in);
+  strcat(out, ".decode");
+  char *keystr = malloc(sizeof(char));
+  char cipherstr[8] = "vernam";
   long int k = 0;
+  long int keyi = 0;
+  long int ki = 0;
   if ((fdin =  open(in, O_RDONLY)) == -1) {
     printf("Can't open file %s\n", in);
     return -1;
@@ -14,29 +25,35 @@ long int vernam_decode(char* in, char* out, char* key) {
     closefiles(1, fdin);
     return -1;
   }
-  if ((fdkey = open(key, O_RDONLY)) == -1) {
-    printf("Can't open file %s\n", key);
-    closefiles(2, fdin, fdout);
-    return -1;
-  }
+
+  read(fdin, cipherstr, 7);
   while (read(fdin, &c, 1) != 0) {
-    if (read(fdkey, &keych, 1) == 0) {
-      printf("\nlength files is not equal\n");
-      return k;
-    }
-    c = c ^ keych;
-    write(fdout, &c, 1);
-    ++k;
+    keystr[ki] = c;
+    ++ki;
+    keystr = realloc(keystr, sizeof(char) * (ki + 1));
   }
-  closefiles(3, fdin, fdout, fdkey);
+  keyi =  ki / 2;
+
+  for (k = 0; k < keyi; ++k) {
+    c = keystr[k] ^ keystr[k + keyi];
+    write(fdout, &c, 1);
+  }
+  closefiles(2, fdin, fdout);
   return k;
 }
 
-long int vernam_encode(char* in, char* out, char* key) {
+long int vernam_encode(char* in) {
   int fdin, fdout, fdkey;
   char c = '\0';
-  char keych = '\0';
+  char key = 0;
+  char *keystr = malloc(sizeof(char));
+  char *keych = malloc(sizeof(char));
+  char out[256] = {0};
+  strcat(out, in);
+  strcat(out, ".encode");
   long int k = 0;
+  long int ki = 0;
+  char cipherstr[8] = "vernam";
   srand(time(NULL));
   if ((fdin =  open(in, O_RDONLY)) == -1) {
     printf("Can't open file %s\n", in);
@@ -47,19 +64,27 @@ long int vernam_encode(char* in, char* out, char* key) {
     closefiles(1, fdin);
     return -1;
   }
-  if ((fdkey = open(key, O_WRONLY | O_CREAT | O_TRUNC, 0666)) == -1) {
-    printf("Can't open file %s\n", key);
-    closefiles(2, fdin, fdout);
-    return -1;
-  }
+
   while (read(fdin, &c, 1) != 0) {
-    keych = (rand() % 256);//ascii table
-    c = c ^ keych;
-    write(fdout, &c, 1);
-    write(fdkey, &keych, 1);
-    ++k;
+    keych[ki] = (rand() % 256);//ascii table
+    keystr[ki] = c ^ keych[ki];
+    ++ki;
+    keych = realloc(keych, sizeof(char) * (ki + 1));
+    keystr = realloc(keystr, sizeof(char) * (ki + 1));
   }
-  closefiles(3, fdin, fdout, fdkey);
+
+  //it is encrypt
+  write(fdout, &key, 1);
+  write(fdout, cipherstr, 6);
+
+  for (k = 0; k < ki; ++k) {
+    write(fdout, &keych[k], 1);
+  }
+  for (k = 0; k < ki; ++k) {
+    write(fdout, &keystr[k], 1);
+  }
+
+  closefiles(2, fdin, fdout);
   return k;
 }
 
@@ -123,11 +148,18 @@ int rsa_generate() {
   return 0;
 }
 
-long int rsa_encode(char* in, char* out) {
+long int rsa_encode(char* in) {
   int fdin, fdout, fdkey;
   unsigned long int pubkey_e, pubkey_n;
-  long int k = 0;
   long int c = '\0';
+  char *keystr = malloc(sizeof(char));
+  long int k = 0;
+  long int ki = 0;
+  char key = 0;
+  char cipherstr[5] = "rsa";
+  char out[256] = {0};
+  strcat(out, in);
+  strcat(out, ".encode");
   if ((fdin =  open(in, O_RDONLY)) == -1) {
     printf("Can't open file %s\n", in);
     return -1;
@@ -137,24 +169,9 @@ long int rsa_encode(char* in, char* out) {
     closefiles(1, fdin);
     return -1;
   }
-  if ((fdkey = open("./.keyrsa.pub", O_RDONLY)) == -1) {
-    printf("Can't open file %s\n", "./.keyrsa.pub");
-    closefiles(2, fdin, fdout);
-    return -1;
-  }
-
-  if (read(fdkey, &pubkey_e,  sizeof(pubkey_e)) == 0) {
-    printf("Key e loss %s\n", "./.keyrsa.pub");
-    closefiles(3, fdin, fdout, fdkey);
-    return -1;
-  }
-
-  if (read(fdkey, &pubkey_n, sizeof(pubkey_n)) == 0) {
-    printf("Key n loss %s\n", "./.keyrsa.pub");
-    closefiles(3, fdin, fdout, fdkey);
-    return -1;
-  }
-
+  //it is encrypt
+  write(fdout, &key, 1);
+  write(fdout, cipherstr, 6);
   while (read(fdin, &c, 1) != 0) {
 //    printf("%ld ", c);
     c = mod_pow(c, pubkey_e, pubkey_n);
@@ -167,11 +184,17 @@ long int rsa_encode(char* in, char* out) {
   return k;
 }
 
-long int rsa_decode(char* in, char* out) {
+long int rsa_decode(char* in) {
   int fdin, fdout, fdkey;
   unsigned long int privkey_d, privkey_n;
-  long int k = 0;
   long int  c = '\0';
+  char *keystr = malloc(sizeof(char));
+  long int k = 0;
+  long int ki = 0;
+  char cipherstr[5] = "rsa";
+  char out[256] = {0};
+  strcat(out, in);
+  strcat(out, ".decode");
   if ((fdin =  open(in, O_RDONLY)) == -1) {
     printf("Can't open file %s\n", in);
     return -1;
@@ -179,23 +202,6 @@ long int rsa_decode(char* in, char* out) {
   if ((fdout = open(out, O_WRONLY | O_CREAT | O_TRUNC, 0666)) == -1) {
     printf("Can't open file %s\n", out);
     closefiles(1, fdin);
-    return -1;
-  }
-  if ((fdkey = open("./.keyrsa", O_RDONLY)) == -1) {
-    printf("Can't open file %s\n", "./.keyrsa");
-    closefiles(2, fdin, fdout);
-    return -1;
-  }
-
-  if (read(fdkey, &privkey_d, sizeof(privkey_d)) == 0) {
-    printf("Key d loss %s\n", ".keyrsa");
-    closefiles(3, fdin, fdout, fdkey);
-    return -1;
-  }
-
-  if (read(fdkey, &privkey_n, sizeof(privkey_n)) == 0) {
-    printf("Key n loss %s\n", ".keyrsa");
-    closefiles(3, fdin, fdout, fdkey);
     return -1;
   }
 
