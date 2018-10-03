@@ -150,9 +150,9 @@ int rsa_generate() {
 
 long int rsa_encode(char* in) {
   int fdin, fdout, fdkey;
-  unsigned long int pubkey_e, pubkey_n;
+  unsigned long int pubkey_e = 0, pubkey_n = 0;
   long int c = '\0';
-  char *keystr = malloc(sizeof(char));
+  long int *keystr = malloc(sizeof(long int));
   long int k = 0;
   long int ki = 0;
   char key = 0;
@@ -169,17 +169,23 @@ long int rsa_encode(char* in) {
     closefiles(1, fdin);
     return -1;
   }
-  //it is encrypt
-  write(fdout, &key, 1);
-  write(fdout, cipherstr, 6);
   while (read(fdin, &c, 1) != 0) {
 //    printf("%ld ", c);
     c = mod_pow(c, pubkey_e, pubkey_n);
 //    printf("%ld\n", c);
-    write(fdout, &c, sizeof(c));
+    keystr[ki] = c;
+    ++ki;
+    keystr = realloc(keystr, sizeof(long int) * (ki + 1));
     c = 0;
-    ++k;
   }
+  //it is encrypt
+  write(fdout, &key, 1);
+  write(fdout, cipherstr, 3);
+	
+  for (k = 0; k < ki; ++k) {
+    write(fdout, &keystr[k], sizeof(long int));
+  }
+	
   closefiles(3, fdin, fdout, fdkey);
   return k;
 }
@@ -188,7 +194,7 @@ long int rsa_decode(char* in) {
   int fdin, fdout, fdkey;
   unsigned long int privkey_d, privkey_n;
   long int  c = '\0';
-  char *keystr = malloc(sizeof(char));
+  long int *keystr = malloc(sizeof(long int));
   long int k = 0;
   long int ki = 0;
   char cipherstr[5] = "rsa";
