@@ -21,8 +21,8 @@ int main (int argc, char** argv) {
 
   printf("\n");
   rsa_generate();
-  printf("rsa_encode return %ld\n", rsa_encode("./rsa.txt", "./rsa_code.txt"));
-  printf("rsa_decode return %ld\n", rsa_decode("./rsa_code.txt", "./rsa_res.txt"));
+  printf("rsa_encode return %ld\n", rsa_encode("./rsa.txt"));
+  printf("rsa_decode return %ld\n", rsa_decode("./rsa.txt.encode"));
 
   return 0;
 }

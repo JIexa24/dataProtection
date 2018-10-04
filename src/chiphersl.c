@@ -26,8 +26,8 @@ long int vernam_decode(char* in) {
     return -1;
   }
 
-  read(fdin, cipherstr, 7);
-  while (read(fdin, &c, 1) != 0) {
+  if (read(fdin, cipherstr, 7 * sizeof(char)) == 0) return 0;
+  while (read(fdin, &c, sizeof(char)) != 0) {
     keystr[ki] = c;
     ++ki;
     keystr = realloc(keystr, sizeof(char) * (ki + 1));
@@ -36,14 +36,14 @@ long int vernam_decode(char* in) {
 
   for (k = 0; k < keyi; ++k) {
     c = keystr[k] ^ keystr[k + keyi];
-    write(fdout, &c, 1);
+    write(fdout, &c, sizeof(char));
   }
   closefiles(2, fdin, fdout);
   return k;
 }
 
 long int vernam_encode(char* in) {
-  int fdin, fdout, fdkey;
+  int fdin, fdout;
   char c = '\0';
   char key = 0;
   char *keystr = malloc(sizeof(char));
@@ -65,7 +65,7 @@ long int vernam_encode(char* in) {
     return -1;
   }
 
-  while (read(fdin, &c, 1) != 0) {
+  while (read(fdin, &c, sizeof(char)) != 0) {
     keych[ki] = (rand() % 256);//ascii table
     keystr[ki] = c ^ keych[ki];
     ++ki;
@@ -74,14 +74,14 @@ long int vernam_encode(char* in) {
   }
 
   //it is encrypt
-  write(fdout, &key, 1);
-  write(fdout, cipherstr, 6);
+  write(fdout, &key, sizeof(char));
+  write(fdout, cipherstr, 6 * sizeof(char));
 
   for (k = 0; k < ki; ++k) {
-    write(fdout, &keych[k], 1);
+    write(fdout, &keych[k], sizeof(char));
   }
   for (k = 0; k < ki; ++k) {
-    write(fdout, &keystr[k], 1);
+    write(fdout, &keystr[k], sizeof(char));
   }
 
   closefiles(2, fdin, fdout);
@@ -130,14 +130,11 @@ int rsa_generate() {
     n = p * q;
     eiler_res = (p - 1) * (q - 1);
     e = generate_prime_too_number(eiler_res, 1, eiler_res);
-/*  while (d <= 0xFFFFFFFF) {
-      if ((d * e) % eiler_res == 1) break;
-      ++d;
-    }
-*/
+
     equlid(e, eiler_res, &d, NULL, &nod);
+    d = d % eiler_res;
   }
-  printf("rsa e = %lu, d = %lu %X,p = %lu, q = %lu, n = %lu\n", e, d,d, p, q, n);
+  printf("rsa e = %lu, d = %lu,p = %lu, q = %lu, n = %lu\n", e, d, p, q, n);
   write(fdpub, &e, sizeof(e));
   write(fdpub, &n, sizeof(n));
   write(fdpriv, &d, sizeof(d));
@@ -169,7 +166,15 @@ long int rsa_encode(char* in) {
     closefiles(1, fdin);
     return -1;
   }
-  while (read(fdin, &c, 1) != 0) {
+  if ((fdkey = open(".keyrsa.pub", O_RDONLY)) == -1) {
+    printf("Can't open file %s\n", out);
+    closefiles(2, fdin, fdout);
+    return -1;
+  }
+  read(fdkey, &pubkey_e, sizeof(unsigned long int));
+  read(fdkey, &pubkey_n, sizeof(unsigned long int));
+
+  while (read(fdin, &c, sizeof(char)) != 0) {
 //    printf("%ld ", c);
     c = mod_pow(c, pubkey_e, pubkey_n);
 //    printf("%ld\n", c);
@@ -179,13 +184,13 @@ long int rsa_encode(char* in) {
     c = 0;
   }
   //it is encrypt
-  write(fdout, &key, 1);
-  write(fdout, cipherstr, 3);
-	
+  write(fdout, &key, sizeof(char));
+  write(fdout, cipherstr, 3 * sizeof(char));
+
   for (k = 0; k < ki; ++k) {
     write(fdout, &keystr[k], sizeof(long int));
   }
-	
+
   closefiles(3, fdin, fdout, fdkey);
   return k;
 }
@@ -194,7 +199,7 @@ long int rsa_decode(char* in) {
   int fdin, fdout, fdkey;
   unsigned long int privkey_d, privkey_n;
   long int  c = '\0';
-  long int *keystr = malloc(sizeof(long int));
+  char *keystr = malloc(sizeof(char));
   long int k = 0;
   long int ki = 0;
   char cipherstr[5] = "rsa";
@@ -211,13 +216,26 @@ long int rsa_decode(char* in) {
     return -1;
   }
 
-  while (read(fdin, &c, sizeof(c)) != 0) {
-//    printf("%ld ", c);
+  if ((fdkey = open(".keyrsa", O_RDONLY)) == -1) {
+    printf("Can't open file %s\n", out);
+    closefiles(2, fdin, fdout);
+    return -1;
+  }
+  read(fdkey, &privkey_d, sizeof(unsigned long int));
+  read(fdkey, &privkey_n, sizeof(unsigned long int));
+
+  if (read(fdin, cipherstr, 4 * sizeof(char)) == 0) return 0;
+  while (read(fdin, &c, sizeof(long int)) != 0) {
     c = mod_pow(c, privkey_d, privkey_n);
-//    printf("%ld\n", c);
-    write(fdout, &c, 1);
+    keystr[ki] = c;
+    ++ki;
+    keystr = realloc(keystr, sizeof(char) * (ki + 1));
     c = 0;
     ++k;
+  }
+
+  for (k = 0; k < ki; ++k) {
+    write(fdout, &keystr[k], sizeof(char));
   }
   closefiles(3, fdin, fdout, fdkey);
   return k;
