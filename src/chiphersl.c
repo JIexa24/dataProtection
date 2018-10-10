@@ -254,26 +254,160 @@ void shamir_decode() {
 
 }
 
-int el_gamal_generate() {
-  long int y, x;
-  long int g, p;
-  int fdpub, fdpriv;
 
-  if ((fdpub = open("./.keyeg.pub",  O_WRONLY | O_CREAT | O_TRUNC, 0666)) == -1) {
-    printf("Can't open file .keyeg.pub\n");
+int elgamal_generate()
+{
+  unsigned long int p, g, x, y;
+  int fd_public, fd_private;
+
+  if ((fd_public = open("./.keyelgamal.pub",  O_WRONLY | O_CREAT | O_TRUNC, 0666)) == -1) {
+    printf("[ERROR] Can't open file .keyelgamal.pub\n");
     return -1;
   }
-  if ((fdpriv = open("./.keyeg",  O_WRONLY | O_CREAT | O_TRUNC, 0600)) == -1) {
-    printf("Can't open file .keyeg\n");
-    closefiles(1, fdpub);
+  if ((fd_private = open("./.keyelgamal",  O_WRONLY | O_CREAT | O_TRUNC, 0600)) == -1) {
+    printf("[ERROR] Can't open file .keyelgamal\n");
+    closefiles(1, fd_public);
     return -1;
   }
-  p = generate_prime_number(0, MAXINT);
+
+  p = generate_prime_number(255, 800);
+//  p = 257;
   x = generate_prime_number(1, p - 1);
+//  x = 3;
   g = fsqrt_mod(p);
-  //pubkey y, privkey x
+//  g = 3; 
+  y = mod_pow(g, x, p);
 
+  write(fd_public, &y, sizeof(unsigned long int));
+  write(fd_public, &p, sizeof(unsigned long int));
+  write(fd_public, &g, sizeof(unsigned long int));
+  write(fd_private, &x, sizeof(unsigned long int));
+  write(fd_private, &p, sizeof(unsigned long int));
+  write(fd_private, &g, sizeof(unsigned long int));
+
+  closefiles(2, fd_public, fd_private);
+  return 0;
 }
+
+long int elgamal_encode(char* input_file)
+{
+  int fd_input, fd_output, fd_key;
+  char c = '\0';
+  char key = 0;
+  unsigned long int *keystr_a = malloc(sizeof(unsigned long long int));
+  unsigned long int *keystr_b = malloc(sizeof(unsigned long long int));
+  char out[256] = {0};
+  strcat(out, input_file);
+  strcat(out, ".encode");
+  long int k = 0;
+  long int ki = 0;
+  unsigned long long int p, g, a = 1, b = 1;
+  unsigned long long int pubkey = 0, sessionkey = 0;
+  char cipherstr[9] = "elgamal";
+  srand(time(NULL));
+  if ((fd_input =  open(input_file, O_RDONLY)) == -1) {
+    printf("[ERROR] Can't open file %s\n", input_file);
+    return -1;
+  }
+  if ((fd_output = open(out, O_WRONLY | O_CREAT | O_TRUNC, 0666)) == -1) {
+    printf("Can't open file %s\n", out);
+    closefiles(1, fd_input);
+    return -1;
+  }
+  if ((fd_key = open(".keyelgamal.pub", O_RDONLY)) == -1) {
+    printf("Can't open file %s\n", out);
+    closefiles(2, fd_input, fd_output);
+    return -1;
+  }
+  read(fd_key, &pubkey, sizeof(unsigned long int));
+  read(fd_key, &p, sizeof(unsigned long int));
+  read(fd_key, &g, sizeof(unsigned long int));
+	
+  sessionkey = generate_prime_number(1, p - 1);
+  while (read(fd_input, &c, sizeof(char)) != 0) { 
+    a = mod_pow(g, sessionkey, p);
+    b = mod_pow(pubkey, sessionkey, p);
+    b = (b % p) * (c % p);
+    keystr_a[ki] = a;
+    keystr_b[ki] = b;
+    ++ki;
+    keystr_a = realloc(keystr_a, sizeof(unsigned long int) * (ki + 1));
+    keystr_b = realloc(keystr_b, sizeof(unsigned long int) * (ki + 1));
+    a = 0;
+    b = 0;
+    printf("%d\n", c);
+    c = 0;
+  }
+
+  write(fd_output, &key, sizeof(char));
+  write(fd_output, cipherstr, 7 * sizeof(char));
+
+  for (k = 0; k < ki; ++k) {
+    write(fd_output, &keystr_a[k], sizeof(unsigned long int));
+    write(fd_output, &keystr_b[k], sizeof(unsigned long int));
+    printf("WRITE a = %ld, b = %ld\n", keystr_a[k], keystr_b[k]);
+  }
+  closefiles(3, fd_input, fd_output, fd_key);
+
+  return k;
+}
+
+long int elgamal_decode(char* input_file)
+{
+  int fd_input, fd_output, fd_key;
+  unsigned long long int privkey_x, privkey_p, privkey_g;
+  unsigned long long int stream_a = '\0';
+  unsigned long long int stream_b = '\0';
+  unsigned long long int encode_message = 0;
+  char *keystr = malloc(sizeof(char));
+  long int k = 0;
+  long int ki = 0;
+  char cipherstr[7] = "elgamal";
+  char out[256] = {0};
+  strcat(out, input_file);
+  strcat(out, ".decode");
+  if ((fd_input =  open(input_file, O_RDONLY)) == -1) {
+    printf("Can't open file %s\n", input_file);
+    return -1;
+  }
+  if ((fd_output = open(out, O_WRONLY | O_CREAT | O_TRUNC, 0666)) == -1) {
+    printf("Can't open file %s\n", out);
+    closefiles(1, fd_input);
+    return -1;
+  }
+
+  if ((fd_key = open(".keyelgamal", O_RDONLY)) == -1) {
+    printf("Can't open file %s\n", out);
+    closefiles(2, fd_input, fd_output);
+    return -1;
+  }
+  read(fd_key, &privkey_x, sizeof(unsigned long int));
+  read(fd_key, &privkey_p, sizeof(unsigned long int));
+  read(fd_key, &privkey_g, sizeof(unsigned long int));
+
+  if (read(fd_input, cipherstr, 8 * sizeof(char)) == 0) return 0;
+  printf("%.7s\n", &cipherstr[1]);
+  while (read(fd_input, &stream_a, sizeof(unsigned long int)) != 0) {
+    read(fd_input, &stream_b, sizeof(unsigned long int));
+    printf("READ a = %ld, b = %ld\n",stream_a, stream_b);
+    encode_message = mod_pow(stream_a, privkey_p - 1 - privkey_x, privkey_p);
+    encode_message = ((encode_message % privkey_p) * (stream_b % privkey_p)) % privkey_p;
+    printf("%ld (mod = %ld, x = %ld)\n", encode_message, privkey_p, privkey_x);
+    keystr[ki] = encode_message;
+    ++ki;
+    keystr = realloc(keystr, sizeof(char) * (ki + 1));
+
+    ++k;
+  }
+
+  for (k = 0; k < ki; ++k) {
+    write(fd_output, &keystr[k], sizeof(char));
+  }
+  closefiles(3, fd_input, fd_output, fd_key);
+
+  return k;
+}
+
 
 int fsqrt_mod (long int p) {
   long int feiler = p - 1;
