@@ -262,10 +262,11 @@ int shamir_cipher(char* input_file)
   shamir_generate(&p, c, d);
 
   while (read(fd_input, &symb, sizeof(char)) != 0) {
-    expmod_func(symb, c[0], p, &x[0]);
-    expmod_func(x[0], c[1], p, &x[1]);
-    expmod_func(x[1], d[0], p, &x[0]);
-    expmod_func(x[0], d[1], p, &x[1]);
+    x[0] = mod_pow(symb, c[0], p);
+    x[1] = mod_pow(x[0], c[1], p);
+    x[0] = mod_pow(x[1], d[0], p);
+    x[1] = mod_pow(x[0], d[1], p);
+	  
     keystr_input[ki] = x[0];
     keystr_output[ki] = x[1];
     if (symb != keystr_output[ki]) {
