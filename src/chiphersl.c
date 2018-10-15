@@ -241,17 +241,75 @@ long int rsa_decode(char* in) {
   return k;
 }
 
+int shamir_cipher(char* input_file)
+{
+  int is_it_ok = 0;
+  char symb = '\0';
+  long int ki = 0;
+  char out[256] = {0};
+  strcat(out, input_file);
+  strcat(out, ".encode");
+  unsigned long int p, c[2], d[2], x[2];
+  int fd_input, fd_encoder, fd_decoder;
+  unsigned long int* keystr_input = malloc(sizeof(unsigned long long int));
+  char* keystr_output = malloc(sizeof(char));
 
-void shamir_generate() {
+  if ((fd_input = open(input_file, O_RDONLY)) == -1) {
+    printf("Can't open file %s\n", input_file);
+    return -1;
+  }
 
+  shamir_generate(&p, c, d);
+
+  while (read(fd_input, &symb, sizeof(char)) != 0) {
+    expmod_func(symb, c[0], p, &x[0]);
+    expmod_func(x[0], c[1], p, &x[1]);
+    expmod_func(x[1], d[0], p, &x[0]);
+    expmod_func(x[0], d[1], p, &x[1]);
+    keystr_input[ki] = x[0];
+    keystr_output[ki] = x[1];
+    if (symb != keystr_output[ki]) {
+      is_it_ok = -1;
+    }
+    ++ki;
+    keystr_input = realloc(keystr_input, sizeof(unsigned long long int) * (ki + 1));
+    keystr_output = realloc(keystr_output, sizeof(char) * (ki + 1));
+    symb = 0;
+  }
+
+  if ((fd_encoder = open(out,  O_WRONLY | O_CREAT | O_TRUNC, 0666)) == -1) {
+    printf("Can't open file %s\n", out);
+    return -1;
+  }
+  strcat(out, ".decode");
+  if ((fd_decoder = open(out,  O_WRONLY | O_CREAT | O_TRUNC, 0600)) == -1) {
+    printf("Can't open file %s\n", out);
+    closefiles(1, fd_encoder);
+    return -1;
+  }
+
+
+  for (int k = 0; k < ki; ++k) {
+    write(fd_encoder, &keystr_input[k], sizeof(unsigned long long int));
+    write(fd_decoder, &keystr_output[k], sizeof(char));
+  }
+
+  closefiles(3, fd_input, fd_encoder, fd_decoder);
+
+  if (is_it_ok != 0) return -1;
+  return 0;
 }
 
-void shamir_encode() {
-
-}
-
-void shamir_decode() {
-
+void shamir_generate(unsigned long int* p, unsigned long int* c, unsigned long int* d)
+{
+  unsigned long int euclid_res[3];
+  generate_prime_number(1, MAXINT, p);
+  do {
+  c[0] = generate_prime_too_number(*p - 1, 1, *p - 1);
+  c[1] = generate_prime_too_number(*p - 1, 1, *p - 1);
+  euclid(*p - 1, c[0],&d[0],NULL,NULL);
+  euclid(*p - 1, c[1],&d[1],NULL,NULL);
+  } while (d[0] > 0xFFFFFF || d[1] > 0xFFFFFF);
 }
 
 
