@@ -251,7 +251,7 @@ int shamir_cipher(char* input_file)
   strcat(out, ".encode");
   unsigned long int p, c[2], d[2], x[2];
   int fd_input, fd_encoder, fd_decoder;
-  unsigned long int* keystr_input = malloc(sizeof(unsigned long long int));
+  unsigned long int* keystr_input = malloc(sizeof(unsigned long int));
   char* keystr_output = malloc(sizeof(char));
 
   if ((fd_input = open(input_file, O_RDONLY)) == -1) {
@@ -273,7 +273,7 @@ int shamir_cipher(char* input_file)
       is_it_ok = -1;
     }
     ++ki;
-    keystr_input = realloc(keystr_input, sizeof(unsigned long long int) * (ki + 1));
+    keystr_input = realloc(keystr_input, sizeof(unsigned long int) * (ki + 1));
     keystr_output = realloc(keystr_output, sizeof(char) * (ki + 1));
     symb = 0;
   }
@@ -353,8 +353,8 @@ long int elgamal_encode(char* input_file)
   int fd_input, fd_output, fd_key;
   char c = '\0';
   char key = 0;
-  unsigned long int *keystr_a = malloc(sizeof(unsigned long long int));
-  unsigned long int *keystr_b = malloc(sizeof(unsigned long long int));
+  unsigned long int *keystr_a = malloc(sizeof(unsigned long int));
+  unsigned long int *keystr_b = malloc(sizeof(unsigned long int));
   char out[256] = {0};
   strcat(out, input_file);
   strcat(out, ".encode");
