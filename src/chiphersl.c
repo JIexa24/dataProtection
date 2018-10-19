@@ -263,7 +263,7 @@ int shamir_cipher(char* input_file)
 
   printf("p %lu c %lu %lu d %lu %lu\n", p, c[0],c[1],d[0],d[1]);
   while (read(fd_input, &symb, sizeof(char)) != 0) {
-  printf("r - %c\n", symb);
+  printf("r - %d\n", symb);
     x[0] = mod_pow(symb, c[0], p);
     x[1] = mod_pow(x[0], c[1], p);
     x[0] = mod_pow(x[1], d[0], p);
@@ -275,7 +275,7 @@ int shamir_cipher(char* input_file)
     if (symb != keystr_output[ki]) {
       is_it_ok = -1;
     }
-  printf("i - %lu\n", is_it_ok);
+  printf("i - %ld\n", is_it_ok);
     ++ki;
     keystr_input = realloc(keystr_input, sizeof(unsigned long int) * (ki + 1));
     keystr_output = realloc(keystr_output, sizeof(char) * (ki + 1));
