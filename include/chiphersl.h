@@ -20,7 +20,7 @@ void closefiles(int N, ...);
 int elgamal_generate();
 long int elgamal_encode(char* in);
 long int elgamal_decode(char* in);
-int shamir_generate(unsigned long int* p, unsigned long int* c, unsigned long int* d);
+void shamir_generate(unsigned long int* p, unsigned long int* c, unsigned long int* d);
 int shamir_cipher(char* in);
 int fsqrt_mod(long int p);
 
