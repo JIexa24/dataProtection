@@ -18,6 +18,10 @@ long int rsa_encode(char* in);
 long int rsa_decode(char* in);
 void closefiles(int N, ...);
 int el_gamal_generate();
+int el_gamal_encode();
+int el_gamal_decode();
+int shamir_generate();
+int shamir_cipher();
 int fsqrt_mod(long int p);
 
 #endif
