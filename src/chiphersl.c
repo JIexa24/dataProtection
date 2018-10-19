@@ -261,17 +261,21 @@ int shamir_cipher(char* input_file)
 
   shamir_generate(&p, c, d);
 
+  printf("p %lu c %lu %lu d %lu %lu\n", p, c[0],c[1],d[0],d[1]);
   while (read(fd_input, &symb, sizeof(char)) != 0) {
+  printf("r - %c\n", symb);
     x[0] = mod_pow(symb, c[0], p);
     x[1] = mod_pow(x[0], c[1], p);
     x[0] = mod_pow(x[1], d[0], p);
     x[1] = mod_pow(x[0], d[1], p);
+  printf("w - %lu\n", x[1]);
 	  
     keystr_input[ki] = x[0];
-    keystr_output[ki] = x[1];
+    keystr_output[ki] = (char)x[1];
     if (symb != keystr_output[ki]) {
       is_it_ok = -1;
     }
+  printf("i - %lu\n", is_it_ok);
     ++ki;
     keystr_input = realloc(keystr_input, sizeof(unsigned long int) * (ki + 1));
     keystr_output = realloc(keystr_output, sizeof(char) * (ki + 1));
@@ -445,7 +449,6 @@ long int elgamal_decode(char* input_file)
   read(fd_key, &privkey_g, sizeof(unsigned long int));
 
   if (read(fd_input, cipherstr, 8 * sizeof(char)) == 0) return 0;
-  printf("%.7s\n", &cipherstr[1]);
   while (read(fd_input, &stream_a, sizeof(unsigned long int)) != 0) {
     read(fd_input, &stream_b, sizeof(unsigned long int));
  //   printf("READ a = %ld, b = %ld\n",stream_a, stream_b);
