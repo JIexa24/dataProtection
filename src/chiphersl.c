@@ -306,8 +306,8 @@ void shamir_generate(unsigned long int* p, unsigned long int* c, unsigned long i
   unsigned long int euclid_res[3];
   *p = generate_prime_number(1, MAXINT);
   do {
-  c[0] = generate_prime_too_number(*p - 1, 1, *p - 1);
-  c[1] = generate_prime_too_number(*p - 1, 1, *p - 1);
+  c[0] = generate_prime_too_number(*p, 1, *p - 1);
+  c[1] = generate_prime_too_number(*p, 1, *p - 1);
   equlid(*p - 1, c[0],&d[0],NULL,NULL);
   equlid(*p - 1, c[1],&d[1],NULL,NULL);
   } while (d[0] > 0xFFFFFF || d[1] > 0xFFFFFF);
