@@ -313,7 +313,7 @@ void shamir_generate(unsigned long int* p, unsigned long int* c, unsigned long i
   do {
   c[0] = generate_prime_too_number(*p - 1, 1, *p - 1);
   equlid(*p - 1, c[0],&d[0],NULL,&n1);
-  } while ((d[0] || n1 != 1);
+  } while ((d[0] || n1 != 1));
   do {
   c[1] = generate_prime_too_number(*p - 1, 1, *p - 1);
   equlid(*p - 1, c[1],&d[1],NULL,&n2);
