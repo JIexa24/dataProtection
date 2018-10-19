@@ -23,7 +23,7 @@ int main (int argc, char** argv) {
   rsa_generate();
   printf("rsa_encode return %ld\n", rsa_encode("./rsa.txt"));
   printf("rsa_decode return %ld\n", rsa_decode("./rsa.txt.encode"));
-  shamir_generate();
+  //shamir_generate();
   printf("shamir_encode return %ld\n", shamir_cipher("./shamir.txt"));
   elgamal_generate();
   printf("elgamal_encode return %ld\n", elgamal_encode("./elgamal.txt"));
