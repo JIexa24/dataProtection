@@ -7,7 +7,7 @@
 #include <math.h>
 #define INT32_MAX 2147483647 
 
-long int mod_pow(long int num, unsigned long int pow,unsigned long int mod);
+unsigned long int mod_pow(unsigned long int num, unsigned long int pow,unsigned long int mod);
 void equlid(long int a, long int b, long int* x, long int *y, long int* nod);
 void key_diffyhellman();
 int test_prime_num(long int p);

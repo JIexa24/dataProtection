@@ -261,21 +261,24 @@ int shamir_cipher(char* input_file)
 
   shamir_generate(&p, c, d);
 
-  printf("p %lu c %lu %lu d %lu %lu\n", p, c[0],c[1],d[0],d[1]);
+//  printf("p %lu c %lu %lu d %lu %lu\n", p, c[0],c[1],d[0],d[1]);
   while (read(fd_input, &symb, sizeof(char)) != 0) {
-  printf("r - %d\n", symb);
+//  printf("r - %d\n", symb);
     x[0] = mod_pow(symb, c[0], p);
+//    printf("x[0] = %lu\n", x[0]);
     x[1] = mod_pow(x[0], c[1], p);
+//    printf("x[1] = %lu\n", x[1]);
     x[0] = mod_pow(x[1], d[0], p);
+//    printf("x[0] = %lu\n", x[0]);
     x[1] = mod_pow(x[0], d[1], p);
-  printf("w - %lu\n", x[1]);
-	  
+//  printf("w - %lu\n", x[1]&0xff);
+ 
     keystr_input[ki] = x[0];
-    keystr_output[ki] = (char)x[1];
+    keystr_output[ki] = (char)(x[1] & 0xFF);
     if (symb != keystr_output[ki]) {
       is_it_ok = -1;
     }
-  printf("i - %d\n", is_it_ok);
+//  printf("i - %d\n", is_it_ok);
     ++ki;
     keystr_input = realloc(keystr_input, sizeof(unsigned long int) * (ki + 1));
     keystr_output = realloc(keystr_output, sizeof(char) * (ki + 1));
@@ -308,16 +311,16 @@ int shamir_cipher(char* input_file)
 void shamir_generate(unsigned long int* p, unsigned long int* c, unsigned long int* d)
 {
   unsigned long int euclid_res[3];
-  *p = generate_prime_number(1, MAXINT); 
+  *p = generate_prime_number(300, 1000); 
   unsigned long int n1, n2;
   do {
   c[0] = generate_prime_too_number(*p - 1, 1, *p - 1);
-  equlid(*p - 1, c[0],&d[0],NULL,&n1);
-  } while ((d[0] || n1 != 1));
+  equlid(c[0], *p -1 ,&d[0],NULL,&n1);
+  } while ((d[0] > 0xFFFF));
   do {
   c[1] = generate_prime_too_number(*p - 1, 1, *p - 1);
-  equlid(*p - 1, c[1],&d[1],NULL,&n2);
-  } while ( d[1] > 0xFFFFFF || n2 != 1);
+  equlid(c[1], *p -1,&d[1],NULL,&n2);
+  } while ( d[1] > 0xFFFF);
 }
 
 

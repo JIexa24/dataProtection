@@ -1,7 +1,7 @@
 #include "../include/main.h"
 
 // num^pow % mod = result
-long int mod_pow(long int num, unsigned long int pow,unsigned long int mod) {
+unsigned long int mod_pow(unsigned long int num, unsigned long int pow, unsigned long int mod) {
     long int result = 1;
     while (pow)
     {
