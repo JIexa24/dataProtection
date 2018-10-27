@@ -20,8 +20,8 @@ long int vernam_decode(char* in) {
     printf("Can't open file %s\n", in);
     return -1;
   }
-  if ((fdin1 =  open("kek", O_RDONLY)) == -1) {
-    printf("Can't open file %s\n", in);
+  if ((fdin1 =  open(".keyver", O_RDONLY)) == -1) {
+    printf("Can't open file\n");
     return -1;
   }
   if ((fdout = open(out, O_WRONLY | O_CREAT | O_TRUNC, 0666)) == -1) {
@@ -42,7 +42,7 @@ long int vernam_decode(char* in) {
   for (k = 0; k < ki; ++k) {
     write(fdout, &c, sizeof(char));
   }
-  closefiles(2, fdin, fdout);
+  closefiles(3, fdin,fdin1, fdout);
   return k;
 }
 
@@ -69,8 +69,8 @@ long int vernam_encode(char* in) {
     return -1;
   }
 
-  if ((fdout1 = open("kek", O_WRONLY | O_CREAT | O_TRUNC, 0666)) == -1) {
-    printf("Can't open file %s\n", out);
+  if ((fdout1 = open(".keyver", O_WRONLY | O_CREAT | O_TRUNC, 0666)) == -1) {
+    printf("Can't open file \n");
     closefiles(1, fdin);
     return -1;
   }
@@ -93,7 +93,7 @@ long int vernam_encode(char* in) {
     write(fdout, &keystr[k], sizeof(char));
   }
 
-  closefiles(2, fdin, fdout);
+  closefiles(3, fdin, fdout, fdout1);
   return k;
 }
 
@@ -131,14 +131,14 @@ int rsa_generate() {
     return -1;
   }
   long int nod = 0;
-  while (nod != 1 || test_prime_num(d) == 0 || d > 0xFFFF) {
+  while (nod != 1 || test_prime_num(d) == 0 || d > 0xFFFFF) {
     do {
-      p = generate_prime_number(1, MAXINT);
-      q = generate_prime_number(1, MAXINT);
+      p = generate_prime_number(300, MAXINT);
+      q = generate_prime_number(300, MAXINT);
     } while (p == q);
     n = p * q;
     eiler_res = (p - 1) * (q - 1);
-    e = generate_prime_too_number(eiler_res, 1, eiler_res);
+    e = generate_prime_too_number(eiler_res, 256, eiler_res);
 
     equlid(e, eiler_res, &d, NULL, &nod);
     d = d % eiler_res;
@@ -157,8 +157,8 @@ int rsa_generate() {
 long int rsa_encode(char* in) {
   int fdin, fdout, fdkey;
   unsigned long int pubkey_e = 0, pubkey_n = 0;
-  long int c = '\0';
-  long int *keystr = malloc(sizeof(long int));
+  unsigned long int c = '\0';
+  unsigned long int *keystr = malloc(sizeof(unsigned long int ));
   long int k = 0;
   long int ki = 0;
   char key = 0;
@@ -197,7 +197,7 @@ long int rsa_encode(char* in) {
   write(fdout, cipherstr, 3 * sizeof(char));
 
   for (k = 0; k < ki; ++k) {
-    write(fdout, &keystr[k], sizeof(long int));
+    write(fdout, &keystr[k], sizeof(unsigned long int ));
   }
 
   closefiles(3, fdin, fdout, fdkey);
@@ -207,7 +207,7 @@ long int rsa_encode(char* in) {
 long int rsa_decode(char* in) {
   int fdin, fdout, fdkey;
   unsigned long int privkey_d, privkey_n;
-  long int  c = '\0';
+  unsigned long int  c = '\0';
   char *keystr = malloc(sizeof(char));
   long int k = 0;
   long int ki = 0;
@@ -234,9 +234,9 @@ long int rsa_decode(char* in) {
   read(fdkey, &privkey_n, sizeof(unsigned long int));
 
   if (read(fdin, cipherstr, 4 * sizeof(char)) == 0) return 0;
-  while (read(fdin, &c, sizeof(long int)) != 0) {
+  while (read(fdin, &c, sizeof(unsigned long int )) != 0) {
     c = mod_pow(c, privkey_d, privkey_n);
-    keystr[ki] = c;
+    keystr[ki] = (char)c;
    // printf("%d ", (int)c);
     ++ki;
     keystr = realloc(keystr, sizeof(char) * (ki + 1));
