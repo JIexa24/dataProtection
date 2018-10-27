@@ -5,8 +5,8 @@ long int vernam(char* in, char* out) {
 }
 
 long int vernam_decode(char* in) {
-  int fdin, fdout;
-  char c = '\0';
+  int fdin,fdin1, fdout;
+  char c = '\0',c1;
   char keych = '\0';
   char out[256] = {0};
   strcat(out, in);
@@ -20,22 +20,26 @@ long int vernam_decode(char* in) {
     printf("Can't open file %s\n", in);
     return -1;
   }
+  if ((fdin1 =  open("kek", O_RDONLY)) == -1) {
+    printf("Can't open file %s\n", in);
+    return -1;
+  }
   if ((fdout = open(out, O_WRONLY | O_CREAT | O_TRUNC, 0666)) == -1) {
     printf("Can't open file %s\n", out);
     closefiles(1, fdin);
     return -1;
   }
 
-  if (read(fdin, cipherstr, 7 * sizeof(char)) == 0) return 0;
+ // if (read(fdin, cipherstr, 7 * sizeof(char)) == 0) return 0;
   while (read(fdin, &c, sizeof(char)) != 0) {
-    keystr[ki] = c;
+    read(fdin1, &c1, sizeof(char));
+    keystr[ki] = c ^ c1;
     ++ki;
     keystr = realloc(keystr, sizeof(char) * (ki + 1));
   }
   keyi =  ki / 2;
 
-  for (k = 0; k < keyi; ++k) {
-    c = keystr[k] ^ keystr[k + keyi];
+  for (k = 0; k < ki; ++k) {
     write(fdout, &c, sizeof(char));
   }
   closefiles(2, fdin, fdout);
@@ -43,7 +47,7 @@ long int vernam_decode(char* in) {
 }
 
 long int vernam_encode(char* in) {
-  int fdin, fdout;
+  int fdin, fdout, fdout1;
   char c = '\0';
   char key = 0;
   char *keystr = malloc(sizeof(char));
@@ -65,6 +69,11 @@ long int vernam_encode(char* in) {
     return -1;
   }
 
+  if ((fdout1 = open("kek", O_WRONLY | O_CREAT | O_TRUNC, 0666)) == -1) {
+    printf("Can't open file %s\n", out);
+    closefiles(1, fdin);
+    return -1;
+  }
   while (read(fdin, &c, sizeof(char)) != 0) {
     keych[ki] = (rand() % 256);//ascii table
     keystr[ki] = c ^ keych[ki];
@@ -74,11 +83,11 @@ long int vernam_encode(char* in) {
   }
 
   //it is encrypt
-  write(fdout, &key, sizeof(char));
-  write(fdout, cipherstr, 6 * sizeof(char));
+//  write(fdout, &key, sizeof(char));
+ // write(fdout, cipherstr, 6 * sizeof(char));
 
   for (k = 0; k < ki; ++k) {
-    write(fdout, &keych[k], sizeof(char));
+    write(fdout1, &keych[k], sizeof(char));
   }
   for (k = 0; k < ki; ++k) {
     write(fdout, &keystr[k], sizeof(char));
@@ -109,7 +118,7 @@ long int generate_prime_too_number(long int e, long int min, long int max) {
 int rsa_generate() {
   unsigned long int p, q, e;
   long int eiler_res;
-  unsigned long int d, n;
+  unsigned long int d = 0, n;
   int fdpub, fdpriv;
 
   if ((fdpub = open("./.keyrsa.pub",  O_WRONLY | O_CREAT | O_TRUNC, 0666)) == -1) {
@@ -175,7 +184,7 @@ long int rsa_encode(char* in) {
   read(fdkey, &pubkey_n, sizeof(unsigned long int));
 
   while (read(fdin, &c, sizeof(char)) != 0) {
-//    printf("%ld ", c);
+ //   printf("%d ", (int)c);
     c = mod_pow(c, pubkey_e, pubkey_n);
 //    printf("%ld\n", c);
     keystr[ki] = c;
@@ -228,12 +237,14 @@ long int rsa_decode(char* in) {
   while (read(fdin, &c, sizeof(long int)) != 0) {
     c = mod_pow(c, privkey_d, privkey_n);
     keystr[ki] = c;
+   // printf("%d ", (int)c);
     ++ki;
     keystr = realloc(keystr, sizeof(char) * (ki + 1));
     c = 0;
     ++k;
   }
 
+    printf("\n");
   for (k = 0; k < ki; ++k) {
     write(fdout, &keystr[k], sizeof(char));
   }
