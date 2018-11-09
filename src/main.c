@@ -2,7 +2,8 @@
 #include <stdint.h>
 int main (int argc, char** argv) {
   srand(time(NULL));
-  eds_rsa("./elgamal.txt");
+//  eds_rsa("./elgamal.txt");
+ eds_elgamal("./elgamal.txt");
   return 0;
 }
 

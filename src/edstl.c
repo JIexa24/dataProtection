@@ -1,3 +1,4 @@
+
 #include "../include/main.h"
 
 int eds_rsa(char* in) {
@@ -61,20 +62,29 @@ int eds_elgamal(char* in) {
   char out[256] = {0};
   char *keystr = malloc(sizeof(char));
   char *hashkeystr = NULL;
-  unsigned long int p = 23;// generate_prime_number(1, 1000);
-  unsigned long int k = 5;// generate_prime_too_number(p - 1 ,1, p - 1);
-  long int k1 = 0, nod = 0;
+  unsigned long int p = generate_prime_number(1, 100);
+  unsigned long int k = generate_prime_too_number(p - 1 ,1, p - 1);
+  long int k1 = 1, nod = 0;
   unsigned long int g = fsqrt_mod(p);
   unsigned long int r = mod_pow(g, k, p);
-  unsigned long int x = 7;//rand() % (p - 1) + 1;
+  unsigned long int x = rand() % (p - 1) + 1;
   unsigned long int y = mod_pow(g, x, p);
-  unsigned long int s = 0;
+  long int s = 0;
   unsigned long int testl = 0;
   unsigned long int testr = 0;
+
   do {
-    equlid(k, p - 1, &k1, &testl, &nod);
-    k1 = k1 % (p - 1);
-  } while (nod != 1);
+//    equlid(k, p - 1, &k1, &testl, &nod);
+    nod = (++k1 * k) % (p - 1);
+//  printf("%ld, %ld\n", k1, nod);
+  if (k1 == p - 1) {
+    k = generate_prime_too_number(p-1,1,p-1);
+    k1 = 1;
+    nod = 0;
+  }
+  if ( nod == 1) break;
+//    printf("k1 = %lu", k1);
+  } while (1);
 
   if ((fdin =  open(in, O_RDONLY)) == -1) {
     printf("Can't open file %s\n", in);
@@ -91,10 +101,11 @@ int eds_elgamal(char* in) {
 
   hash(keystr, &hashkeystr);
   hash_i = hashtab_hash(hashkeystr);
-  hash_i = 3;
-  s = (hash_i - x * r) % (p - 1);
-  s = (s * k1) % (p - 1);
-  s = 21;
+  hash_i = 5;
+  
+  s = s + ((hash_i * k1) % (p - 1) - (x * r * k1) % (p - 1)) % (p - 1);
+  printf("%ld\n",s);
+//  s = 21;
   testl = mod_pow(y, r, p);
   testl = testl * mod_pow(r, s, p);
   testl = testl % p;
