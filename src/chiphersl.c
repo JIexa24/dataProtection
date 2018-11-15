@@ -1,10 +1,10 @@
 #include "../include/main.h"
 
-long int vernam(char* in, char* out) {
+long long int vernam(char* in, char* out) {
 
 }
 
-long int vernam_decode(char* in) {
+long long int vernam_decode(char* in) {
   int fdin,fdin1, fdout;
   char c = '\0',c1;
   char keych = '\0';
@@ -13,9 +13,9 @@ long int vernam_decode(char* in) {
   strcat(out, ".decode");
   char *keystr = malloc(sizeof(char));
   char cipherstr[8] = "vernam";
-  long int k = 0;
-  long int keyi = 0;
-  long int ki = 0;
+  long long int k = 0;
+  long long int keyi = 0;
+  long long int ki = 0;
   if ((fdin =  open(in, O_RDONLY)) == -1) {
     printf("Can't open file %s\n", in);
     return -1;
@@ -46,7 +46,7 @@ long int vernam_decode(char* in) {
   return k;
 }
 
-long int vernam_encode(char* in) {
+long long int vernam_encode(char* in) {
   int fdin, fdout, fdout1;
   char c = '\0';
   char key = 0;
@@ -55,8 +55,8 @@ long int vernam_encode(char* in) {
   char out[256] = {0};
   strcat(out, in);
   strcat(out, ".encode");
-  long int k = 0;
-  long int ki = 0;
+  long long int k = 0;
+  long long int ki = 0;
   char cipherstr[8] = "vernam";
   srand(time(NULL));
   if ((fdin =  open(in, O_RDONLY)) == -1) {
@@ -97,9 +97,9 @@ long int vernam_encode(char* in) {
   return k;
 }
 
-int test_prime_too_num(long int p, long int e) {
+int test_prime_too_num(long long int p, long long int e) {
   int i = 1;
-  unsigned long int x, y, nod;
+  unsigned long long int x, y, nod;
   if (p == e) return 0;
   if (p % e == 0) return 0;
   equlid(p, e, &x, &y, &nod);
@@ -107,8 +107,8 @@ int test_prime_too_num(long int p, long int e) {
   return 1;
 }
 
-long int generate_prime_too_number(long int e, long int min, long int max) {
-    long int p = 1;
+long long int generate_prime_too_number(long long int e, long long int min, long long int max) {
+    long long int p = 1;
     do {
         p = (rand()) % (max - min) + min;
     } while (!test_prime_too_num(e, p));
@@ -116,9 +116,9 @@ long int generate_prime_too_number(long int e, long int min, long int max) {
 }
 
 int rsa_generate() {
-  unsigned long int p, q, e;
-  long int eiler_res;
-  unsigned long int d = 0, n;
+  unsigned long long int p, q, e;
+  long long int eiler_res;
+  unsigned long long int d = 0, n;
   int fdpub, fdpriv;
 
   if ((fdpub = open("./.keyrsa.pub",  O_WRONLY | O_CREAT | O_TRUNC, 0666)) == -1) {
@@ -130,7 +130,7 @@ int rsa_generate() {
     closefiles(1, fdpub);
     return -1;
   }
-  long int nod = 0;
+  long long int nod = 0;
   while (nod != 1 || test_prime_num(d) == 0 || d > 0xFFFFF) {
     do {
       p = generate_prime_number(300, MAXINT);
@@ -138,12 +138,20 @@ int rsa_generate() {
     } while (p == q);
     n = p * q;
     eiler_res = (p - 1) * (q - 1);
-    e = generate_prime_too_number(eiler_res, 256, eiler_res);
-
-    equlid(e, eiler_res, &d, NULL, &nod);
-    d = d % eiler_res;
+    e = generate_prime_too_number(eiler_res, 256, MAXINT);
+    d = 3;
+    do {
+      nod = (++d * e) % (eiler_res);
+      if (d == eiler_res) {
+        nod = 0;
+        break;
+      }
+      if ( nod == 1) break;
+    } while (1);
+//    equlid(e, eiler_res, &d, NULL, &nod);
+//    d = d % eiler_res;
   }
-//  printf("rsa e = %lu, d = %lu,p = %lu, q = %lu, n = %lu\n", e, d, p, q, n);
+  printf("rsa e = %llu, d = %llu, p = %llu, q = %llu, n = %llu\n", e, d, p, q, n);
   write(fdpub, &e, sizeof(e));
   write(fdpub, &n, sizeof(n));
   write(fdpriv, &d, sizeof(d));
@@ -154,13 +162,13 @@ int rsa_generate() {
   return 0;
 }
 
-long int rsa_encode(char* in) {
+long long int rsa_encode(char* in) {
   int fdin, fdout, fdkey;
-  unsigned long int pubkey_e = 0, pubkey_n = 0;
-  unsigned long int c = '\0';
-  unsigned long int *keystr = malloc(sizeof(unsigned long int ));
-  long int k = 0;
-  long int ki = 0;
+  unsigned long long int pubkey_e = 0, pubkey_n = 0;
+  unsigned long long int c = '\0';
+  unsigned long long int *keystr = malloc(sizeof(unsigned long long int ));
+  long long int k = 0;
+  long long int ki = 0;
   char key = 0;
   char cipherstr[5] = "rsa";
   char out[256] = {0};
@@ -180,16 +188,16 @@ long int rsa_encode(char* in) {
     closefiles(2, fdin, fdout);
     return -1;
   }
-  read(fdkey, &pubkey_e, sizeof(unsigned long int));
-  read(fdkey, &pubkey_n, sizeof(unsigned long int));
+  read(fdkey, &pubkey_e, sizeof(unsigned long long int));
+  read(fdkey, &pubkey_n, sizeof(unsigned long long int));
 
   while (read(fdin, &c, sizeof(char)) != 0) {
  //   printf("%d ", (int)c);
     c = mod_pow(c, pubkey_e, pubkey_n);
-//    printf("%ld\n", c);
+//    printf("%lld\n", c);
     keystr[ki] = c;
     ++ki;
-    keystr = realloc(keystr, sizeof(long int) * (ki + 1));
+    keystr = realloc(keystr, sizeof(long long int) * (ki + 1));
     c = 0;
   }
   //it is encrypt
@@ -197,20 +205,20 @@ long int rsa_encode(char* in) {
   write(fdout, cipherstr, 3 * sizeof(char));
 
   for (k = 0; k < ki; ++k) {
-    write(fdout, &keystr[k], sizeof(unsigned long int ));
+    write(fdout, &keystr[k], sizeof(unsigned long long int ));
   }
 
   closefiles(3, fdin, fdout, fdkey);
   return k;
 }
 
-long int rsa_decode(char* in) {
+long long int rsa_decode(char* in) {
   int fdin, fdout, fdkey;
-  unsigned long int privkey_d, privkey_n;
-  unsigned long int  c = '\0';
+  unsigned long long int privkey_d, privkey_n;
+  unsigned long long int  c = '\0';
   char *keystr = malloc(sizeof(char));
-  long int k = 0;
-  long int ki = 0;
+  long long int k = 0;
+  long long int ki = 0;
   char cipherstr[5] = "rsa";
   char out[256] = {0};
   strcat(out, in);
@@ -230,11 +238,11 @@ long int rsa_decode(char* in) {
     closefiles(2, fdin, fdout);
     return -1;
   }
-  read(fdkey, &privkey_d, sizeof(unsigned long int));
-  read(fdkey, &privkey_n, sizeof(unsigned long int));
+  read(fdkey, &privkey_d, sizeof(unsigned long long int));
+  read(fdkey, &privkey_n, sizeof(unsigned long long int));
 
   if (read(fdin, cipherstr, 4 * sizeof(char)) == 0) return 0;
-  while (read(fdin, &c, sizeof(unsigned long int )) != 0) {
+  while (read(fdin, &c, sizeof(unsigned long long int )) != 0) {
     c = mod_pow(c, privkey_d, privkey_n);
     keystr[ki] = (char)c;
    // printf("%d ", (int)c);
@@ -256,13 +264,13 @@ int shamir_cipher(char* input_file)
 {
   int is_it_ok = 0;
   char symb = '\0';
-  long int ki = 0;
+  long long int ki = 0;
   char out[256] = {0};
   strcat(out, input_file);
   strcat(out, ".encode");
-  unsigned long int p, c[2], d[2], x[2];
+  unsigned long long int p, c[2], d[2], x[2];
   int fd_input, fd_encoder, fd_decoder;
-  unsigned long int* keystr_input = malloc(sizeof(unsigned long int));
+  unsigned long long int* keystr_input = malloc(sizeof(unsigned long long int));
   char* keystr_output = malloc(sizeof(char));
 
   if ((fd_input = open(input_file, O_RDONLY)) == -1) {
@@ -283,7 +291,7 @@ int shamir_cipher(char* input_file)
 //    printf("x[0] = %lu\n", x[0]);
     x[1] = mod_pow(x[0], d[1], p);
 //  printf("w - %lu\n", x[1]&0xff);
- 
+
     keystr_input[ki] = x[0];
     keystr_output[ki] = (char)(x[1] & 0xFF);
     if (symb != keystr_output[ki]) {
@@ -291,7 +299,7 @@ int shamir_cipher(char* input_file)
     }
 //  printf("i - %d\n", is_it_ok);
     ++ki;
-    keystr_input = realloc(keystr_input, sizeof(unsigned long int) * (ki + 1));
+    keystr_input = realloc(keystr_input, sizeof(unsigned long long int) * (ki + 1));
     keystr_output = realloc(keystr_output, sizeof(char) * (ki + 1));
     symb = 0;
   }
@@ -319,11 +327,11 @@ int shamir_cipher(char* input_file)
   return 0;
 }
 
-void shamir_generate(unsigned long int* p, unsigned long int* c, unsigned long int* d)
+void shamir_generate(unsigned long long int* p, unsigned long long int* c, unsigned long long int* d)
 {
-  unsigned long int euclid_res[3];
-  *p = generate_prime_number(300, 1000); 
-  unsigned long int n1, n2;
+  unsigned long long int euclid_res[3];
+  *p = generate_prime_number(300, 1000);
+  unsigned long long int n1, n2;
   do {
   c[0] = generate_prime_too_number(*p - 1, 1, *p - 1);
   equlid(c[0], *p -1 ,&d[0],NULL,&n1);
@@ -337,7 +345,7 @@ void shamir_generate(unsigned long int* p, unsigned long int* c, unsigned long i
 
 int elgamal_generate()
 {
-  unsigned long int p, g, x, y;
+  unsigned long long int p, g, x, y;
   int fd_public, fd_private;
 
   if ((fd_public = open("./.keyelgamal.pub",  O_WRONLY | O_CREAT | O_TRUNC, 0666)) == -1) {
@@ -355,32 +363,32 @@ int elgamal_generate()
   x = generate_prime_number(1, p - 1);
 //  x = 3;
   g = fsqrt_mod(p);
-//  g = 3; 
+//  g = 3;
   y = mod_pow(g, x, p);
 
-  write(fd_public, &y, sizeof(unsigned long int));
-  write(fd_public, &p, sizeof(unsigned long int));
-  write(fd_public, &g, sizeof(unsigned long int));
-  write(fd_private, &x, sizeof(unsigned long int));
-  write(fd_private, &p, sizeof(unsigned long int));
-  write(fd_private, &g, sizeof(unsigned long int));
+  write(fd_public, &y, sizeof(unsigned long long int));
+  write(fd_public, &p, sizeof(unsigned long long int));
+  write(fd_public, &g, sizeof(unsigned long long int));
+  write(fd_private, &x, sizeof(unsigned long long int));
+  write(fd_private, &p, sizeof(unsigned long long int));
+  write(fd_private, &g, sizeof(unsigned long long int));
 
   closefiles(2, fd_public, fd_private);
   return 0;
 }
 
-long int elgamal_encode(char* input_file)
+long long int elgamal_encode(char* input_file)
 {
   int fd_input, fd_output, fd_key;
   char c = '\0';
   char key = 0;
-  unsigned long int *keystr_a = malloc(sizeof(unsigned long int));
-  unsigned long int *keystr_b = malloc(sizeof(unsigned long int));
+  unsigned long long int *keystr_a = malloc(sizeof(unsigned long long int));
+  unsigned long long int *keystr_b = malloc(sizeof(unsigned long long int));
   char out[256] = {0};
   strcat(out, input_file);
   strcat(out, ".encode");
-  long int k = 0;
-  long int ki = 0;
+  long long int k = 0;
+  long long int ki = 0;
   unsigned long long int p, g, a = 1, b = 1;
   unsigned long long int pubkey = 0, sessionkey = 0;
   char cipherstr[9] = "elgamal";
@@ -399,20 +407,20 @@ long int elgamal_encode(char* input_file)
     closefiles(2, fd_input, fd_output);
     return -1;
   }
-  read(fd_key, &pubkey, sizeof(unsigned long int));
-  read(fd_key, &p, sizeof(unsigned long int));
-  read(fd_key, &g, sizeof(unsigned long int));
-	
+  read(fd_key, &pubkey, sizeof(unsigned long long int));
+  read(fd_key, &p, sizeof(unsigned long long int));
+  read(fd_key, &g, sizeof(unsigned long long int));
+
   sessionkey = generate_prime_number(1, p - 1);
-  while (read(fd_input, &c, sizeof(char)) != 0) { 
+  while (read(fd_input, &c, sizeof(char)) != 0) {
     a = mod_pow(g, sessionkey, p);
     b = mod_pow(pubkey, sessionkey, p);
     b = (b % p) * (c % p);
     keystr_a[ki] = a;
     keystr_b[ki] = b;
     ++ki;
-    keystr_a = realloc(keystr_a, sizeof(unsigned long int) * (ki + 1));
-    keystr_b = realloc(keystr_b, sizeof(unsigned long int) * (ki + 1));
+    keystr_a = realloc(keystr_a, sizeof(unsigned long long int) * (ki + 1));
+    keystr_b = realloc(keystr_b, sizeof(unsigned long long int) * (ki + 1));
     a = 0;
     b = 0;
 //    printf("%d\n", c);
@@ -423,16 +431,16 @@ long int elgamal_encode(char* input_file)
   write(fd_output, cipherstr, 7 * sizeof(char));
 
   for (k = 0; k < ki; ++k) {
-    write(fd_output, &keystr_a[k], sizeof(unsigned long int));
-    write(fd_output, &keystr_b[k], sizeof(unsigned long int));
- //   printf("WRITE a = %ld, b = %ld\n", keystr_a[k], keystr_b[k]);
+    write(fd_output, &keystr_a[k], sizeof(unsigned long long int));
+    write(fd_output, &keystr_b[k], sizeof(unsigned long long int));
+ //   printf("WRITE a = %lld, b = %lld\n", keystr_a[k], keystr_b[k]);
   }
   closefiles(3, fd_input, fd_output, fd_key);
 
   return k;
 }
 
-long int elgamal_decode(char* input_file)
+long long int elgamal_decode(char* input_file)
 {
   int fd_input, fd_output, fd_key;
   unsigned long long int privkey_x, privkey_p, privkey_g;
@@ -440,8 +448,8 @@ long int elgamal_decode(char* input_file)
   unsigned long long int stream_b = '\0';
   unsigned long long int encode_message = 0;
   char *keystr = malloc(sizeof(char));
-  long int k = 0;
-  long int ki = 0;
+  long long int k = 0;
+  long long int ki = 0;
   char cipherstr[7] = "elgamal";
   char out[256] = {0};
   strcat(out, input_file);
@@ -461,17 +469,17 @@ long int elgamal_decode(char* input_file)
     closefiles(2, fd_input, fd_output);
     return -1;
   }
-  read(fd_key, &privkey_x, sizeof(unsigned long int));
-  read(fd_key, &privkey_p, sizeof(unsigned long int));
-  read(fd_key, &privkey_g, sizeof(unsigned long int));
+  read(fd_key, &privkey_x, sizeof(unsigned long long int));
+  read(fd_key, &privkey_p, sizeof(unsigned long long int));
+  read(fd_key, &privkey_g, sizeof(unsigned long long int));
 
   if (read(fd_input, cipherstr, 8 * sizeof(char)) == 0) return 0;
-  while (read(fd_input, &stream_a, sizeof(unsigned long int)) != 0) {
-    read(fd_input, &stream_b, sizeof(unsigned long int));
- //   printf("READ a = %ld, b = %ld\n",stream_a, stream_b);
+  while (read(fd_input, &stream_a, sizeof(unsigned long long int)) != 0) {
+    read(fd_input, &stream_b, sizeof(unsigned long long int));
+ //   printf("READ a = %lld, b = %lld\n",stream_a, stream_b);
     encode_message = mod_pow(stream_a, privkey_p - 1 - privkey_x, privkey_p);
     encode_message = ((encode_message % privkey_p) * (stream_b % privkey_p)) % privkey_p;
- //   printf("%ld (mod = %ld, x = %ld)\n", encode_message, privkey_p, privkey_x);
+ //   printf("%lld (mod = %lld, x = %lld)\n", encode_message, privkey_p, privkey_x);
     keystr[ki] = encode_message;
     ++ki;
     keystr = realloc(keystr, sizeof(char) * (ki + 1));
@@ -488,10 +496,10 @@ long int elgamal_decode(char* input_file)
 }
 
 
-int fsqrt_mod (long int p) {
-  long int feiler = p - 1;
-  unsigned long int var;
-  long int i = 0, j = 0;
+int fsqrt_mod (long long int p) {
+  long long int feiler = p - 1;
+  unsigned long long int var;
+  long long int i = 0, j = 0;
   char ok = 0;
   for (i = 1; i < feiler; ++i) {
     ok = 1;

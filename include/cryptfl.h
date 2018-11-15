@@ -7,12 +7,12 @@
 #include <math.h>
 #define INT32_MAX 2147483647
 
-unsigned long int mod_pow(unsigned long int num, unsigned long int pow,unsigned long int mod);
-void equlid(long int a, long int b, long int* x, long int *y, long int* nod);
+unsigned long long int mod_pow(unsigned long long int num, unsigned long long int pow,unsigned long long int mod);
+void equlid(long long int a, long long int b, long long int* x, long long int *y, long long int* nod);
 void key_diffyhellman();
-long int gcd(long int a, long int b);
-int test_prime_num(long int p);
-long int generate_prime_number(long int min, long int max);
-long int small_big_steps(long int g, long int a, long int p) ;
+long long int gcd(long long int a, long long int b);
+int test_prime_num(long long int p);
+long long int generate_prime_number(long long int min, long long int max);
+long long int small_big_steps(long long int g, long long int a, long long int p) ;
 
 #endif
