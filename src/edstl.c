@@ -231,9 +231,134 @@ int eds_elgamal_check(char* in, char* inm) {
 }
 
 int eds_gost(char* in) {
+  int fdin, fdout;
+  int fdpub, fdpriv;
+  int i = 0;
+  unsigned long long int ki = 0, hash_i;
+  unsigned long long int n = 0, d = 0, e = 0,a,b,x,y,q,p,h,k;
+  long long int r,s;
+  char c = '\0';
+  char keych = '\0';
+  char out[256] = {0};
+  char *keystr = malloc(sizeof(char));
+  unsigned long long int *keystrs = malloc(sizeof(unsigned long long int) * 32);
+  char *hashkeystr = NULL;
+  strcat(out, in);
+  strcat(out,".gsgn");
+  if ((fdout =  open(out, O_WRONLY | O_CREAT | O_TRUNC, 0666)) == -1) {
+    printf("Can't open file %s\n", out);
+    return -1;
+  }
+  do {
+    q = generate_prime_number(300,MAXINT);
+    b = random() % 1000;
+    p = b * q + 1;
+  } while (!test_prime_num(p));
 
+  do {
+    a = rand() % p;
+    a = mod_pow(a, b, p);
+  } while (a == 1);
+  x = rand() % q;
+  y = mod_pow(a, x, p);
+
+  write(fdout, &p, sizeof(p));
+  write(fdout, &q, sizeof(q));
+  write(fdout, &a, sizeof(a));
+  write(fdout, &y, sizeof(y));
+
+  if ((fdin =  open(in, O_RDONLY)) == -1) {
+    printf("Can't open file %s\n", in);
+    return -1;
+  }
+  while (read(fdin, &c, sizeof(char)) != 0) {
+    keystr[ki] = c;
+    ++ki;
+    keystr = realloc(keystr, sizeof(char) * (ki + 1));
+  }
+  keystr[ki] = 0;
+  hash(keystr, &hashkeystr);
+
+  for (int i = 0; i < 32; i++) {
+    h = hashkeystr[i];
+    while (1) {
+      k = rand() % q;
+      r = mod_pow(a, k, p) % q;
+      if (r == 0) {
+        continue;
+      }
+      s = (k * h + x * r) % q;
+      if (s > 0) {
+        break;
+      }
+    }
+    write(fdout, &r, sizeof(r));
+    write(fdout, &s, sizeof(s));
+  }
+  return 0;
 }
+int eds_gost_check(char* in, char* inm) {
+  int fdin, fdinm;
+  int fdpub, fdpriv;
+  int i = 0;
+  unsigned long long int ki = 0, hash_i;
+  unsigned long long int n = 0, d = 0, e = 0,a,b,x,y,q,p;
+  long long int r, h, h_inv, s, gcd_x, u1, u2, v;
+  char c = '\0';
+  char keych = '\0';
+  char out[256] = {0};
+  char *keystr = malloc(sizeof(char));
+  unsigned long long int *keystrs = malloc(sizeof(unsigned long long int) * 32);
+  char *hashkeystr = NULL;
 
+  if ((fdin =  open(in, O_RDONLY)) == -1) {
+    printf("Can't open file %s\n", in);
+    closefiles(1, fdin);
+    return -1;
+  }
+
+  if ((fdinm = open(inm, O_RDONLY)) == -1) {
+    printf("Can't open file %s\n", in);
+    closefiles(1, fdin);
+    return -1;
+  }
+  read(fdin, &p, sizeof(p));
+  read(fdin, &q, sizeof(q));
+  read(fdin, &a, sizeof(a));
+  read(fdin, &y, sizeof(y));
+  while (read(fdinm, &c, sizeof(char)) != 0) {
+    keystr[ki] = c;
+    ++ki;
+    keystr = realloc(keystr, sizeof(char) * (ki + 1));
+  }
+  keystr[ki] = 0;
+  hash(keystr, &hashkeystr);
+
+  int flg = 0;
+  for (int i = 0; i < 32; i++) {
+    h = hashkeystr[i];
+    read(fdin, &r, sizeof(r));
+    read(fdin, &s, sizeof(s));
+    if (r >= q || s >= q) {
+      flg = 1;
+      break;
+    }
+    equlid(h, q, &gcd_x, NULL, NULL);
+    h_inv = gcd_x < 0 ? q + gcd_x : gcd_x;
+    u1 = (s * h_inv) % q;
+    u2 = (-r * h_inv) % q;
+    u2 += u2 < 0 ? q : 0;
+    v = ((mod_pow(a, u1, p) * mod_pow(y, u2, p)) % p) % q;
+    if (v != r) {
+      flg = 1;
+      break;
+    }
+  }
+
+  if (flg)
+    return 1;
+  return 0;
+}
 void hash(char *input, char **output)
 {
   md5_state_t HASH;
