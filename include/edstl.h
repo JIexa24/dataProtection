@@ -18,6 +18,7 @@ int eds_rsa_check(char* in,char* inm);
 int eds_elgamal(char* in);
 int eds_elgamal_check(char* in,char* inm);
 int eds_gost(char* in);
+int eds_gost_check(char* in,char* inm);
 void hash(char *input, char **output);
 
 #endif

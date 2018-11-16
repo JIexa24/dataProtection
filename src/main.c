@@ -10,7 +10,11 @@ int main (int argc, char** argv) {
   eds_elgamal_check("./elgamal.txt.esgn", "./elgamal.txt");
   printf("Gost\n");
   eds_gost("./gost.txt");
-  printf("res - %d\n", eds_gost_check("./gost.txt.gsgn", "./gost.txt"));
+  eds_gost_check("./gost.txt.gsgn", "./gost.txt");
+
+  int n_players;
+  n_players = atoi(argv[1]);
+  mental(n_players);
 // eds_elgamal("./elgamal.txt");
   return 0;
 }

@@ -5,7 +5,8 @@
 #include "./chiphersl.h"
 #include "./edstl.h"
 #include "./md5.h"
+#include "./mentalfl.h"
 
-#define MAXINT 500
+#define MAXINT 1024
 
 #endif

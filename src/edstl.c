@@ -29,13 +29,14 @@ int eds_rsa(char* in) {
   rsa_generate();
   if ((fdpriv = open(".keyrsa", O_RDONLY)) == -1) {
     printf("Can't open file %s\n", ".keyrsa");
-    closefiles(2, fdin, fdpub);
+    closefiles(1, fdin);
     return -1;
   }
   strcat(out, in);
   strcat(out, ".rsgn");
   if ((fdout =  open(out, O_WRONLY | O_CREAT | O_TRUNC, 0666)) == -1) {
     printf("Can't open file %s\n", out);
+    closefiles(2, fdin, fdpriv);
     return -1;
   }
 
@@ -52,8 +53,8 @@ int eds_rsa(char* in) {
 }
 
 int eds_rsa_check(char* in, char* inm) {
-  int fdin, fdinm, fdout;
-  int fdpub, fdpriv;
+  int fdin, fdinm;
+  int fdpub;
   int i = 0;
   unsigned long long int ki = 0, hash_i;
   unsigned long long int n = 0, d = 0, e = 0;
@@ -66,7 +67,6 @@ int eds_rsa_check(char* in, char* inm) {
 
   if ((fdin =  open(in, O_RDONLY)) == -1) {
     printf("Can't open file %s\n", in);
-    closefiles(1, fdin);
     return -1;
   }
 
@@ -86,7 +86,7 @@ int eds_rsa_check(char* in, char* inm) {
 
   if ((fdpub = open(".keyrsa.pub", O_RDONLY)) == -1) {
     printf("Can't open file %s\n", out);
-    closefiles(1, fdin);
+    closefiles(2, fdin,fdinm);
     return -1;
   }
   read(fdpub, &e, sizeof(unsigned long long int));
@@ -98,7 +98,7 @@ int eds_rsa_check(char* in, char* inm) {
   }
   printf("expect - %s\n", hashkeystre);
   printf("real   - %s\n", hashkeystr);
-  closefiles(3, fdin, fdpub, fdout);
+  closefiles(3, fdin, fdpub, fdinm);
   return 0;
 }
 
@@ -114,7 +114,7 @@ int eds_elgamal(char* in) {
   unsigned long long int q = 0;
   unsigned long long int k;
   while (!q) {
-      p = generate_prime_number(350, MAXINT);
+      p = generate_prime_number(300, MAXINT);
       if (test_prime_num((p - 1) / 2)) {
       q = (p - 1) / 2;
     }
@@ -148,6 +148,7 @@ int eds_elgamal(char* in) {
   strcat(out, ".esgn");
   if ((fdout =  open(out, O_WRONLY | O_CREAT | O_TRUNC, 0666)) == -1) {
     printf("Can't open file %s\n", out);
+    closefiles(1, fdin);
     return -1;
   }
 
@@ -167,19 +168,21 @@ int eds_elgamal(char* in) {
   for(i = 0; i < 32;++i) {
     s = 0;
     //s = s + ((hashkeystr[i] * k1) % (p - 1) - (x * r * k1) % (p - 1)) % (p - 1);
-    s = ((hashkeystr[i] - x * r)) % (p - 1);
-    s += s < 0 ? p - 1 : 0;
+    s = ((hashkeystr[i] - x * r));
+    s += s < 0 ? x * (p - 1) : 0;
+    s = s % (p - 1);
     s = (k1 * s) % (p - 1);
     write(fdout, &r, sizeof(r));
     write(fdout, &s, sizeof(s));
   }
 //  printf("%s\n%s ---- %llu\neds = %llu, %llu\n\n", keystr, hashkeystr, hash_i, r, s);
 //
+  closefiles(2, fdin, fdout);
+  return 0;
 }
 
 int eds_elgamal_check(char* in, char* inm) {
-  int fdin, fdinm, fdout;
-  int fdpub, fdpriv;
+  int fdin, fdinm;
   int i = 0;
   unsigned long long int ki = 0, hash_i;
   unsigned long long int n = 0, r = 0, p = 0, y = 0, g = 0, ps = 0;
@@ -217,22 +220,20 @@ int eds_elgamal_check(char* in, char* inm) {
     read(fdin, &r, sizeof(r));
     read(fdin, &s, sizeof(s));
     tl = 0;
-    tl = mod_pow(y, r, p);
-    tl = tl * mod_pow(r, s, p);
-    tl = tl % p;
+    tl = (mod_pow(y, r, p) * mod_pow(r, s, p)) % p;
     tr = mod_pow(g, hashkeystre[i], p);
     if ((0 < r && r < p) && (0 < s && s < (p - 1)) && (tl == tr)) {
-      printf("correct \n");
+      printf("correct %llu == %llu\t%c\n", tl, tr,hashkeystre[i]);
     } else {
-      printf("incorrect %llu == %llu %d %c s = %llu r = %llu g=%llu p=%llu\n", tl, tr, hashkeystre[i], hashkeystre[i], s,r,g,p);
+      printf("incorrect %llu == %llu %d %c s = %llu r = %llu g=%llu p=%llu y=%llu\n", tl, tr, hashkeystre[i], hashkeystre[i], s,r,g,p,y);
     }
   }
+  closefiles(2, fdin, fdinm);
   return 0;
 }
 
 int eds_gost(char* in) {
   int fdin, fdout;
-  int fdpub, fdpriv;
   int i = 0;
   unsigned long long int ki = 0, hash_i;
   unsigned long long int n = 0, d = 0, e = 0,a,b,x,y,q,p,h,k;
@@ -251,14 +252,14 @@ int eds_gost(char* in) {
   }
   do {
     q = generate_prime_number(300,MAXINT);
-    b = random() % 1000;
+    b = random() % MAXINT;
     p = b * q + 1;
   } while (!test_prime_num(p));
 
   do {
     a = rand() % p;
-    a = mod_pow(a, b, p);
-  } while (a == 1);
+    a = mod_pow(a, q, p);
+  } while (a != 1);
   x = rand() % q;
   y = mod_pow(a, x, p);
 
@@ -269,6 +270,7 @@ int eds_gost(char* in) {
 
   if ((fdin =  open(in, O_RDONLY)) == -1) {
     printf("Can't open file %s\n", in);
+    closefiles(1, fdout);
     return -1;
   }
   while (read(fdin, &c, sizeof(char)) != 0) {
@@ -279,7 +281,7 @@ int eds_gost(char* in) {
   keystr[ki] = 0;
   hash(keystr, &hashkeystr);
 
-  for (int i = 0; i < 32; i++) {
+  for (i = 0; i < 32; i++) {
     h = hashkeystr[i];
     while (1) {
       k = rand() % q;
@@ -295,11 +297,12 @@ int eds_gost(char* in) {
     write(fdout, &r, sizeof(r));
     write(fdout, &s, sizeof(s));
   }
+  closefiles(2, fdin, fdout);
   return 0;
 }
+
 int eds_gost_check(char* in, char* inm) {
   int fdin, fdinm;
-  int fdpub, fdpriv;
   int i = 0;
   unsigned long long int ki = 0, hash_i;
   unsigned long long int n = 0, d = 0, e = 0,a,b,x,y,q,p;
@@ -313,12 +316,11 @@ int eds_gost_check(char* in, char* inm) {
 
   if ((fdin =  open(in, O_RDONLY)) == -1) {
     printf("Can't open file %s\n", in);
-    closefiles(1, fdin);
     return -1;
   }
 
   if ((fdinm = open(inm, O_RDONLY)) == -1) {
-    printf("Can't open file %s\n", in);
+    printf("Can't open file %s\n", inm);
     closefiles(1, fdin);
     return -1;
   }
@@ -335,10 +337,12 @@ int eds_gost_check(char* in, char* inm) {
   hash(keystr, &hashkeystr);
 
   int flg = 0;
-  for (int i = 0; i < 32; i++) {
+  printf("p =%llu q =%llu a =%llu y =%llu\n", p,q,a,y);
+  for (i = 0; i < 32; i++) {
     h = hashkeystr[i];
     read(fdin, &r, sizeof(r));
     read(fdin, &s, sizeof(s));
+    //printf("r =%llu s =%llu \n", r,s);
     if (r >= q || s >= q) {
       flg = 1;
       break;
@@ -348,15 +352,20 @@ int eds_gost_check(char* in, char* inm) {
     u1 = (s * h_inv) % q;
     u2 = (-r * h_inv) % q;
     u2 += u2 < 0 ? q : 0;
+  //  printf("u1 =%llu u2 =%llu \n", u1,u2);
     v = ((mod_pow(a, u1, p) * mod_pow(y, u2, p)) % p) % q;
+  //  printf("v =%llu r =%llu \n", v,r);
     if (v != r) {
       flg = 1;
       break;
     }
   }
 
+  closefiles(2, fdin, fdinm);
   if (flg)
-    return 1;
+    printf("incorrect\n");
+  else
+    printf("correct\n");
   return 0;
 }
 void hash(char *input, char **output)

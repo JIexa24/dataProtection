@@ -522,7 +522,7 @@ void el_gamal_decode() {
 }
 
 void closefiles(int N, ...) {
-  int* p = &N;
+  unsigned int* p = &N;
   int i = 1;
   p++;
   for (i = 1; i <= N; ++i) {
