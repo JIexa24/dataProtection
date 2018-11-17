@@ -19,7 +19,7 @@ int mental(int n_players) {
   for (int i = 0; i < n_players; ++i) {
     do {
       c[i] = generate_prime_too_number(general_p - 1, 1, general_p - 1);
-      equlid(general_p - 1, c[i], (&euclid_res0), NULL, NULL);
+      equlid(c[i], general_p - 1, &euclid_res0, NULL, NULL);
       d[i] = euclid_res0;
     } while (d[i] > 0xFFFFFF);
     printf("For Player %d generated:\t%lu\t%lu\n", i, c[i], d[i]);
@@ -33,17 +33,20 @@ int mental(int n_players) {
   struct deck game_deck[NUMBER_CARDS];
   unsigned long int encoded_deck[NUMBER_CARDS];
   for(int i = 0; i < NUMBER_CARDS; ++i) {
+      cards[i] = 0;
       fscanf(deck_file, "%s", game_deck[i].suit);
       fscanf(deck_file, "%s", game_deck[i].name);
-      game_deck[i].start_card = i + 1;
-      encoded_deck[i] = i + 1;
+      game_deck[i].start_card = i + 2;
+//      printf("Read card %d %s %s\n", i + 2, game_deck[i].suit, game_deck[i].name);
+      encoded_deck[i] = i + 2;
   }
   fclose(deck_file);
 
-  for(int i = 0; i < n_players; ++i){
-    for (int j = 0; j < NUMBER_CARDS; ++j) {
+  for (int j = 0; j < NUMBER_CARDS; ++j) {
+    for(int i = 0; i < n_players; ++i){
       encoded_deck[j] = mod_pow(encoded_deck[j], c[i], general_p);
     }
+//    printf("%d encode %ld\n",game_deck[j].start_card, encoded_deck[j]);
   }
 
   int rand_card;
@@ -61,8 +64,10 @@ int mental(int n_players) {
         rand_card = rand() % NUMBER_CARDS;
       } while (cards[rand_card] == 1);
       cards[rand_card] = 1;
+      printf("rand %d -> ", rand_card);
       for(int k = 0; k < n_players; k++)
         encoded_deck[rand_card] = mod_pow(encoded_deck[rand_card], d[k], general_p);
+        printf("%ld\n",encoded_deck[rand_card]);
       for(int k = 0; k < NUMBER_CARDS; k++) {
         if (game_deck[k].start_card == encoded_deck[rand_card]) {
           player_hand[i][j].start_card = game_deck[k].start_card;
@@ -71,6 +76,7 @@ int mental(int n_players) {
           k = NUMBER_CARDS;
         }
       }
+      printf("\n");
     }
   }
 
@@ -80,9 +86,9 @@ int mental(int n_players) {
       rand_card = rand() % NUMBER_CARDS;
     } while (cards[rand_card] == 1);
     cards[rand_card] = 1;
-    for(int k = 0; k < n_players; k++) {
+    for(int k = 0; k < n_players; k++)
       encoded_deck[rand_card] = mod_pow(encoded_deck[rand_card], d[k], general_p);
-    }
+    
     for(int k = 0; k < NUMBER_CARDS; k++) {
       if (game_deck[k].start_card == encoded_deck[rand_card]) {
         printf("%s %s\n", game_deck[k].name, game_deck[k].suit);
