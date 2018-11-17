@@ -9,10 +9,10 @@ void swap_card(unsigned long int *card_a, unsigned long int *card_b)
 }
 
 int mental(int n_players) {
-  if (n_players < 3) printf("Amount of players are less than 3. Debug is ON\n");
   unsigned long int general_p;
+  int cards[NUMBER_CARDS] = {0};
   general_p = generate_prime_number(1000, MAXINT);
-  if(n_players < 3) printf("General P was generated:\t%lu\n", general_p);
+  printf("General P was generated:\t%lu\n", general_p);
 
   unsigned long int c[n_players], d[n_players];
   unsigned long long int euclid_res0, euclid_res1, euclid_res2;
@@ -22,7 +22,7 @@ int mental(int n_players) {
       equlid(general_p - 1, c[i], (&euclid_res0), NULL, NULL);
       d[i] = euclid_res0;
     } while (d[i] > 0xFFFFFF);
-    if (n_players < 3) printf("For Player %d generated:\t%lu\t%lu\n", i, c[i], d[i]);
+    printf("For Player %d generated:\t%lu\t%lu\n", i, c[i], d[i]);
   }
 
   FILE *deck_file = fopen("deck", "r");
@@ -44,11 +44,12 @@ int mental(int n_players) {
     for (int j = 0; j < NUMBER_CARDS; ++j) {
       encoded_deck[j] = mod_pow(encoded_deck[j], c[i], general_p);
     }
-    int rand_card;
-    for(int j = 0; j < NUMBER_CARDS; ++j) {
-      rand_card = rand() % NUMBER_CARDS;
-      swap_card(&encoded_deck[j], &encoded_deck[rand_card]);
-    }
+  }
+
+  int rand_card;
+  for(int j = 0; j < NUMBER_CARDS; ++j) {
+    rand_card = rand() % NUMBER_CARDS;
+    swap_card(&encoded_deck[j], &encoded_deck[rand_card]);
   }
 
   unsigned long int curr_card = NUMBER_CARDS;
@@ -56,39 +57,35 @@ int mental(int n_players) {
   for (int i = 0; i < n_players; ++i) {
     int rand_card;
     for(int j = 0; j < 2; j++) {
-      rand_card = rand() % curr_card;
+      do {
+        rand_card = rand() % NUMBER_CARDS;
+      } while (cards[rand_card] == 1);
+      cards[rand_card] = 1;
       for(int k = 0; k < n_players; k++)
-        if (i != k) {
-           encoded_deck[rand_card] = mod_pow(encoded_deck[rand_card], d[k], general_p);
-        }
-      encoded_deck[rand_card] = mod_pow(encoded_deck[rand_card], d[i], general_p);
+        encoded_deck[rand_card] = mod_pow(encoded_deck[rand_card], d[k], general_p);
       for(int k = 0; k < NUMBER_CARDS; k++) {
         if (game_deck[k].start_card == encoded_deck[rand_card]) {
-          player_hand[i][j] = game_deck[k];
-          encoded_deck[rand_card] = encoded_deck[curr_card - 1];
-          curr_card--;
+          player_hand[i][j].start_card = game_deck[k].start_card;
+          strcpy(player_hand[i][j].suit, game_deck[k].suit);
+          strcpy(player_hand[i][j].name, game_deck[k].name);
           k = NUMBER_CARDS;
         }
       }
     }
-    for(int j = 0; j < curr_card; j++) {
-      rand_card = rand() % curr_card;
-      swap_card(&encoded_deck[j], &encoded_deck[rand_card]);
-    }
   }
 
   printf("\nCards on the board:\n");
-  for(int j = 0, rand_card; j < 5; j++) {
-    rand_card = rand() % curr_card;
+  for(int j = 0; j < 5; j++) {
+    do {
+      rand_card = rand() % NUMBER_CARDS;
+    } while (cards[rand_card] == 1);
+    cards[rand_card] = 1;
     for(int k = 0; k < n_players; k++) {
       encoded_deck[rand_card] = mod_pow(encoded_deck[rand_card], d[k], general_p);
     }
     for(int k = 0; k < NUMBER_CARDS; k++) {
       if (game_deck[k].start_card == encoded_deck[rand_card]) {
         printf("%s %s\n", game_deck[k].name, game_deck[k].suit);
-        encoded_deck[rand_card] = encoded_deck[curr_card - 1];
-        curr_card--;
-        k = NUMBER_CARDS;
       }
     }
   }
