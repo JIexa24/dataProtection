@@ -13,7 +13,7 @@ int mental(int n_players) {
   int cards[NUMBER_CARDS] = {0};
   general_p = generate_prime_number(1000, MAXINT);
   printf("General P was generated:\t%lu\n", general_p);
-
+  if (n_players > 23 || n_players < 2) {printf("wrong\n");return -1;}
   unsigned long int c[n_players], d[n_players];
   unsigned long long int euclid_res0, euclid_res1, euclid_res2;
   for (int i = 0; i < n_players; ++i) {
@@ -64,10 +64,10 @@ int mental(int n_players) {
         rand_card = rand() % NUMBER_CARDS;
       } while (cards[rand_card] == 1);
       cards[rand_card] = 1;
-      printf("rand %d -> ", rand_card);
+//      printf("rand %d -> ", rand_card);
       for(int k = 0; k < n_players; k++)
         encoded_deck[rand_card] = mod_pow(encoded_deck[rand_card], d[k], general_p);
-        printf("%ld\n",encoded_deck[rand_card]);
+//        printf("%ld\n",encoded_deck[rand_card]);
       for(int k = 0; k < NUMBER_CARDS; k++) {
         if (game_deck[k].start_card == encoded_deck[rand_card]) {
           player_hand[i][j].start_card = game_deck[k].start_card;
@@ -88,7 +88,7 @@ int mental(int n_players) {
     cards[rand_card] = 1;
     for(int k = 0; k < n_players; k++)
       encoded_deck[rand_card] = mod_pow(encoded_deck[rand_card], d[k], general_p);
-    
+
     for(int k = 0; k < NUMBER_CARDS; k++) {
       if (game_deck[k].start_card == encoded_deck[rand_card]) {
         printf("%s %s\n", game_deck[k].name, game_deck[k].suit);
@@ -102,7 +102,7 @@ int mental(int n_players) {
     printf("%s %s\n", player_hand[i][1].name, player_hand[i][1].suit);
     printf("\n");
   }
-  printf("Widow: %lu cards\n", curr_card);
+  printf("Other: %lu cards\n", curr_card - 5 - n_players*2);
 
   return 0;
 }
