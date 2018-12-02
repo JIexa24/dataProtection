@@ -6,6 +6,7 @@
 #include "./edstl.h"
 #include "./md5.h"
 #include "./mentalfl.h"
+#include "./moneyfil.h"
 
 #define MAXINT 1024
 

@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS=-O0 -g3
-LIB=-lmentalfl -ledstl -lcryptfl -lchiphersl -lm
+LIB=-lmoneyfil -lmentalfl -ledstl -lcryptfl -lchiphersl -lm
 LIBSRC=-L./lib/
 BIN=./bin/main
 
@@ -9,7 +9,7 @@ all: MAIN
 run: MAIN
 	$(BIN)
 
-MAIN: FLAB SLAB TLAB FHLAB ./obj/main.o
+MAIN: FLAB SLAB TLAB FHLAB FILAB ./obj/main.o
 	$(CC) ./obj/main.o -o $(BIN) $(LIB) $(LIBSRC)
 
 FLAB: ./obj/cryptfl.o
@@ -23,6 +23,9 @@ TLAB: ./obj/edstl.o ./obj/md5.o
 
 FHLAB: ./obj/mentalfl.o
 	ar rvs ./lib/libmentalfl.a ./obj/mentalfl.o
+
+FILAB: ./obj/moneyfil.o
+	ar rvs ./lib/libmoneyfil.a ./obj/moneyfil.o
 
 ./obj/main.o: ./src/main.c
 	$(CC) -c ./src/main.c -o ./obj/main.o $(CFLAGS)
@@ -41,6 +44,10 @@ FHLAB: ./obj/mentalfl.o
 
 ./obj/mentalfl.o: ./src/mentalfl.c
 	$(CC) -c ./src/mentalfl.c -o ./obj/mentalfl.o $(CFLAGS)
+
+./obj/moneyfil.o: ./src/moneyfil.c
+	$(CC) -c ./src/moneyfil.c -o ./obj/moneyfil.o $(CFLAGS)
+
 
 clean:
 	rm -rf ./lib/*.a
