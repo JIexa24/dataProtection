@@ -60,7 +60,7 @@ int initialization_transaction(int *account_state, int payment_amount)
       return 0;
     } else return 1;
   } else {
-    printf("%s[BANK]%s Wrong banknote sign!\n", RED, RESET);
+    printf("BANK: Wrong banknote sign!\n");
     return 1;
   }
 }
